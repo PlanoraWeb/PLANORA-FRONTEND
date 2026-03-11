@@ -1,0 +1,14 @@
+.App {
+  font-family: Arial, sans-serif;
+  background-color: #f0f2f5;
+  min-height: 100vh;
+}
+
+.task-card:hover {
+  background-color: #f8f9fa !important;
+  cursor: grab;
+}
+
+.task-card:active {
+  cursor: grabbing;
+}
