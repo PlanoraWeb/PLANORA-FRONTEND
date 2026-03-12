@@ -1,26 +1,5 @@
-// import Dashboard from './pages/DashBoard';
-// import KanbanBoard from './pages/KanbanBoard'
-// import LoginPage from './pages/LoginPage';
-// import "./styles/App.css";
-
-// function App() {
-//   return (
-//     <div className="App">
-      
-//       <main>
-//         {/* Hazırladığımız Kanban Board'u burada sergiliyoruz */}
-//         <Dashboard />
-//       </main>
-//     </div>
-//   )
-// }
-
-// export default App
-
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import {PrivacyPolicy, Tasks, Dashboard, Inbox, Login, ResetPassword, Register, Board, Projects, Team, Reports, Settings, CreateIssue, BackLog, Sprint} from "./pages";
-
-
 
 function App() {
   return (
