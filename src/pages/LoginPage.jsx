@@ -4,11 +4,12 @@ import '../styles/DesignSystem.css'
 import logo from './../assets/ikon.png';
 import Button from '../components/Button';
 import Input from '../components/Input';
+import { Link } from 'react-router-dom';
 const Login = () => {
   return (
     <div className="auth-page">
       <div className="auth-container">
-        <a href="landing.html" className="auth-logo">
+        <Link to="/dashboard" className="auth-logo">
           <div className="logo-box">
             <img 
               src={logo}
@@ -19,7 +20,7 @@ const Login = () => {
             />
           </div>
           <span>Planora</span>
-        </a>
+        </Link>
 
         <div className="auth-card">
           <h1>Welcome back</h1>
@@ -38,7 +39,9 @@ const Login = () => {
             <div className="input-group">
               <div className="input-label-row">
                 <label className="input-label">Password</label>
-                <a href="forgot-password.html" className="auth-link">Forgot password?</a>
+                <Link to="/forgot-password" className="auth-link">
+                  Forgot password?
+                </Link>
               </div>
               <Input
                 type="password"
@@ -82,7 +85,8 @@ const Login = () => {
           </div>
 
           <p className="auth-footer">
-            Don't have an account? <a href="register.html">Start free trial</a>
+            Don't have an account? 
+            <Link to="/register">Start free trial</Link>
           </p>
         </div>
 

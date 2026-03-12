@@ -1,17 +1,51 @@
-import KanbanBoard from './pages/KanbanBoard'
-import LoginPage from './pages/LoginPage';
-import "./styles/App.css";
+// import Dashboard from './pages/DashBoard';
+// import KanbanBoard from './pages/KanbanBoard'
+// import LoginPage from './pages/LoginPage';
+// import "./styles/App.css";
+
+// function App() {
+//   return (
+//     <div className="App">
+      
+//       <main>
+//         {/* Hazırladığımız Kanban Board'u burada sergiliyoruz */}
+//         <Dashboard />
+//       </main>
+//     </div>
+//   )
+// }
+
+// export default App
+
+import { BrowserRouter, Routes, Route } from "react-router-dom";
+import {PrivacyPolicy, Tasks, Dashboard, Inbox, Login, ResetPassword, Register, Board, Projects, Team, Reports, Settings, CreateIssue, BackLog, Sprint} from "./pages";
+
+
 
 function App() {
   return (
-    <div className="App">
-      
-      <main>
-        {/* Hazırladığımız Kanban Board'u burada sergiliyoruz */}
-        <LoginPage />
-      </main>
-    </div>
-  )
+    <BrowserRouter>
+      <Routes>
+        <Route path="/dashboard" element={<Dashboard />} />
+        <Route path="/inbox" element={<Inbox />} />
+        <Route path="/login" element={<Login />} />
+        <Route path="/forgot-password" element={<ResetPassword />} />
+        <Route path="/register" element={<Register />} />
+        {/* <Route path="/terms-of-service" element={<TermsOfService />} />
+        <Route path="/privacy-policy" element={<PrivacyPolicy />} /> */}
+        <Route path="/tasks" element={<Tasks />} />
+        <Route path="/projects" element={<Projects />} />
+        <Route path="/board" element={<Board />} />
+        <Route path="/team" element={<Team />} />
+        <Route path="/reports" element={<Reports />} />
+        <Route path="/settings" element={<Settings />} />
+        <Route path="/create-issue" element={<CreateIssue />} />
+        <Route path="/backlog" element={<BackLog />} />
+        <Route path="/sprint" element={<Sprint />} />
+        {/* Diğer sayfa rotaları buraya eklenecek */}
+      </Routes>
+    </BrowserRouter>
+  );
 }
 
-export default App
+export default App;
