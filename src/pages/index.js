@@ -1,0 +1,16 @@
+export {default as Dashboard} from "./DashBoard";
+export {default as Inbox} from "./Inbox";
+export {default as Login} from "./LoginPage";
+export {default as ResetPassword} from "./ForgotPass";
+export {default as Register} from "./Register";
+export {default as TermsOfService} from "./TermOfService";
+export {default as PrivacyPolicy} from "./PrivacyPolicy";
+export {default as Tasks} from "./Tasks";
+export {default as Projects} from "./Projects";
+export {default as Team} from "./Team";
+export {default as Board} from "./Board";
+export {default as BackLog} from "./BackLog";
+export {default as Reports} from "./Reports";
+export {default as Settings} from "./Settings";
+export {default as CreateIssue} from "./CreateIssue";
+export {default as Sprint} from "./Sprint"
