@@ -1,11 +1,45 @@
-import React from 'react';
+import React, { useState } from 'react';
 import './../styles/Auth.css';
 import '../styles/DesignSystem.css'
 import logo from './../assets/ikon.png';
 import Button from '../components/Button';
 import Input from '../components/Input';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
+import { loginRequest } from '../services/authService';
+
 const Login = () => {
+  const [formData, setFormData] = useState({ email: '', password: '' });
+  const [loading, setLoading] = useState(false)
+  const navigate = useNavigate();
+
+  const handleChange = (e) => {
+    setFormData({ ...formData, [e.target.type]: e.target.value });
+  };
+
+  const handleLogin = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+
+    try {
+      const response = await loginRequest({
+        email: formData.email,
+        password: formData.password
+      });
+
+      const { accessToken, refreshToken, user } = response.data;
+
+      localStorage.setItem("accessToken", accessToken);
+      localStorage.setItem("refreshToken", refreshToken);
+      localStorage.setItem("user", JSON.stringify(user));
+
+      navigate('/dashboard');
+    } catch (error) {
+      alert(error.response?.data?.message || "Giriş başarısız!");
+    } finally {
+      setLoading(false);
+    }
+    };
+  
   return (
     <div className="auth-page">
       <div className="auth-container">
@@ -26,13 +60,15 @@ const Login = () => {
           <h1>Welcome back</h1>
           <p className="auth-subtitle">Enter your credentials to access your workspace.</p>
 
-          <form className="auth-form" onSubmit={(e) => e.preventDefault()}>
+          <form className="auth-form" onSubmit={handleLogin}>
             <div className="input-group">
               <label className="input-label">Email</label>
               <Input 
                 type="email" 
+                name="email"
                 placeholder="alex@company.com" 
                 required 
+                onChange = {handleChange} // Veriyi yakalar
               />
             </div>
             
@@ -47,6 +83,7 @@ const Login = () => {
                 type="password"
                 placeholder="••••••••"
                 required
+                onChange = {handleChange} // Veriyi yakalar
               />
             </div>
 
@@ -57,8 +94,13 @@ const Login = () => {
               </label>
             </div>
 
-            <Button type="submit" variant="primary" size="lg" style={{ width: '100%' }}>
-              Log in
+            <Button 
+              type="submit" 
+              variant="primary" 
+              size="lg" 
+              style={{ width: '100%' }}
+              disabled = {loading}>
+              {loading ? 'Logging in...' : 'Log in'}
             </Button>
           </form>
 
