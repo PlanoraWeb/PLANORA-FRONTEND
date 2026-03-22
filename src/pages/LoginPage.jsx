@@ -13,32 +13,40 @@ const Login = () => {
   const navigate = useNavigate();
 
   const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.type]: e.target.value });
-  };
+  const { name, value } = e.target;
+  setFormData({ ...formData, [name]: value });
+};
 
-  const handleLogin = async (e) => {
-    e.preventDefault();
-    setLoading(true);
+const handleLogin = async (e) => {
+  e.preventDefault();
+  setLoading(true);
 
-    try {
-      const response = await loginRequest({
-        email: formData.email,
-        password: formData.password
-      });
+  try {
+    const response = await loginRequest({
+      email: formData.email,
+      password: formData.password
+    });
 
-      const { accessToken, refreshToken, user } = response.data;
+    // KRİTİK NOKTA: Backend veriyi response.data.data içinde gönderiyor
+    const { accessToken, refreshToken, user } = response.data.data;
 
+    if (accessToken && user) {
       localStorage.setItem("accessToken", accessToken);
       localStorage.setItem("refreshToken", refreshToken);
       localStorage.setItem("user", JSON.stringify(user));
 
+      console.log("Giriş Başarılı! Kullanıcı:", user.firstName);
       navigate('/dashboard');
-    } catch (error) {
-      alert(error.response?.data?.message || "Giriş başarısız!");
-    } finally {
-      setLoading(false);
+    } else {
+      alert("Sunucu verisi beklenen formatta değil.");
     }
-    };
+  } catch (error) {
+    console.error("Hata detayı:", error.response?.data);
+    alert(error.response?.data?.message || "Giriş başarısız!");
+  } finally {
+    setLoading(false);
+  }
+};
   
   return (
     <div className="auth-page">
@@ -69,6 +77,7 @@ const Login = () => {
                 placeholder="alex@company.com" 
                 required 
                 onChange = {handleChange} // Veriyi yakalar
+                value={formData.email}
               />
             </div>
             
@@ -82,8 +91,10 @@ const Login = () => {
               <Input
                 type="password"
                 placeholder="••••••••"
+                name="password"
                 required
                 onChange = {handleChange} // Veriyi yakalar
+                value={formData.password}
               />
             </div>
 

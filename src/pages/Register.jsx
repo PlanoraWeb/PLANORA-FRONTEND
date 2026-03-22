@@ -2,14 +2,49 @@ import React, { useState } from "react";import logo from "../assets/ikon.png"; /
 import "../styles/DesignSystem.css";
 import Button from "../components/Button";
 import Input from "../components/Input";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import Modal from "../components/Modal";
+import { registerRequest } from "../services/authService";
 
 function Register() {
-  const handleSubmit = (e) => {
+  const navigate = useNavigate();
+  const [loading, setLoading] = useState(false);
+  const [formData, setFormData] = useState({
+    fullName: "",
+    email: "",
+    password: "",
+  });
+
+  const handleChange = (e) => {
+    setFormData({...formData, [e.target.id]: e.target.value });
+  };
+
+  const handleRegister = async (e) => {
     e.preventDefault();
-    // Burada form gönderme işlemi yapılabilir
-    console.log("Form submitted!");
+    setLoading();
+
+    try {
+      const name = formData.fullName.trim().split(" ");
+      const firstName = name[0];
+      const lastName = name.slice(1).join(" ") || "-";
+
+      const payload = {
+        firstName,
+        lastName,
+        email: formData.email,
+        password: formData.password,
+      };
+
+      await registerRequest(payload);
+
+      alert("Kayıt Başarılı! Giriş sayfasına yönlendiriliyorsunuz.");
+      navigate("/login");
+    } catch (error) {
+      console.error("Kayıt Hatası:", error.response?.data);
+      alert(error.response?.data?.message || "Kayıt başarısız!!");
+    } finally {
+      setLoading(false);
+    }
   };
 
   const [showTerms, setShowTerms] = useState(false);
@@ -31,7 +66,7 @@ function Register() {
             No credit card required. Full access for 14 days.
           </p>
 
-          <form className="auth-form" onSubmit={handleSubmit}>
+          <form className="auth-form" onSubmit={handleRegister}>
             <div className="input-group">
               <label className="input-label" htmlFor="fullName">Full name</label>
               <Input
@@ -39,6 +74,8 @@ function Register() {
                 id="fullName"
                 placeholder="Alex Morgan"
                 required
+                value={formData.fullName}
+                onChange={handleChange}
               />
             </div>
 
@@ -46,9 +83,11 @@ function Register() {
               <label className="input-label" htmlFor="workEmail">Work email</label>
               <Input
                 type="email"
-                id="workEmail"
+                id="email"
                 placeholder="alex@company.com"
                 required
+                value={formData.email}
+                onChange={handleChange}
               />
             </div>
 
@@ -60,6 +99,8 @@ function Register() {
                 placeholder="Min. 8 characters"
                 required
                 minLength={8}
+                value={formData.password}
+                onChange={handleChange}
               />
               <span className="input-hint">Must be at least 8 characters</span>
             </div>
@@ -94,8 +135,11 @@ function Register() {
                 )}
                 </div>
             {/*HESAP OLUŞTURMA KISMI BURADA OLMALI*/}
-            <Button type="submit" style={{ width: "100%" }}>
-              Create account
+            <Button 
+              type="submit" 
+              style={{ width: "100%" }}
+              disabled={loading}>
+              {loading ? "Creating..." : "Create Account"}
             </Button>
           </form>
 

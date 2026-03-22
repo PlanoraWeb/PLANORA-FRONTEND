@@ -1,14 +1,41 @@
+import { useEffect, useState } from "react";
 import AppLayout from "../layouts/AppLayout";
+import { useNavigate } from "react-router-dom";
 // import "../styles/Das";
 
 
 function Dashboard() {
+  const navigate = useNavigate();
+  const [userName] = useState(() => {
+  const storedUser = localStorage.getItem("user");
+  
+  // SADECE veri varsa VE "undefined" kelimesine eşit değilse parse et
+  if (storedUser && storedUser !== "undefined") {
+    try {
+      const user = JSON.parse(storedUser);
+      return user.firstName || "User";
+    } catch (error) {
+      console.error("User data parse error:", error);
+      return "User";
+    }
+  }
+  return "Guest"; // Veri yoksa veya bozuksa Guest dön
+});
+  
+  useEffect(() => {
+    if (!userName) {
+      navigate("/login")
+    }
+  }, [userName, navigate]);
+
+  if (!userName) return null;
+  
   return (
     <AppLayout>
 
       <div className="app-content">
         <div className="page-header">
-          <h1 className="page-title">Good morning, Alex 👋</h1>
+          <h1 className="page-title">Good morning, {userName} 👋</h1>
           <p className="page-subtitle">
             Here's what's happening with your projects today.
           </p>
