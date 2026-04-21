@@ -26,7 +26,7 @@ const Login = () => {
         password: formData.password
       });
 
-      const { accessToken, refreshToken, user } = response.data;
+      const { accessToken, refreshToken, user } = response.data.data;
 
       localStorage.setItem("accessToken", accessToken);
       localStorage.setItem("refreshToken", refreshToken);
