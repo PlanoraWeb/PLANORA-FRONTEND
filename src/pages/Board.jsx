@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useCallback } from "react";
 import AppLayout from "../layouts/AppLayout";
 import "../styles/Board.css";
 import "../styles/Component.css";
@@ -81,13 +81,7 @@ function Board() {
     })();
   }, []);
 
-  /* ── Load board data when project changes ───────────────────── */
-  useEffect(() => {
-    if (!selectedProjectId) return;
-    loadBoard();
-  }, [selectedProjectId]);
-
-  async function loadBoard() {
+  const loadBoard = useCallback(async () => {
     setLoading(true);
     try {
       const [statusRes, taskRes] = await Promise.all([
@@ -101,7 +95,13 @@ function Board() {
     } finally {
       setLoading(false);
     }
-  }
+  }, [selectedProjectId]);
+
+  /* ── Load board data when project changes ───────────────────── */
+  useEffect(() => {
+    if (!selectedProjectId) return;
+    loadBoard();
+  }, [selectedProjectId, loadBoard]);
 
   /* ── Drag & Drop ────────────────────────────────────────────── */
   async function onDragEnd(result) {
@@ -236,7 +236,6 @@ function Board() {
       {createModalStatus && (
         <CreateTaskModal
           statusId={createModalStatus}
-          statuses={statuses}
           members={selectedProject?.members ?? []}
           onClose={() => setCreateModalStatus(null)}
           onCreate={handleCreateTask}
@@ -385,7 +384,7 @@ function TaskCardContent({ task, onDelete }) {
 /* ================================================================
    CREATE TASK MODAL
    ================================================================ */
-function CreateTaskModal({ statusId, statuses, members, onClose, onCreate }) {
+function CreateTaskModal({ statusId, members, onClose, onCreate }) {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [priority, setPriority] = useState("MEDIUM");
