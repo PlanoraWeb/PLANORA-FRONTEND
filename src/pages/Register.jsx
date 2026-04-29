@@ -5,7 +5,7 @@ import Button from "../components/Button";
 import Input from "../components/Input";
 import { Link, useNavigate } from "react-router-dom";
 import Modal from "../components/Modal";
-import axios from "axios";
+import { registerRequest } from "../services/authService";
 
 function Register() {
   const navigate = useNavigate();
@@ -31,7 +31,7 @@ function Register() {
     const lastName = nameParts.slice(1).join(" ") || "User"; // Soyisim girilmediyse varsayilan atama
 
     try {
-      const response = await axios.post("http://localhost:5000/api/v1/auth/register", {
+      const response = await registerRequest({
         firstName,
         lastName,
         email: formData.email,
