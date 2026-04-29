@@ -1,0 +1,241 @@
+/* Planora Auth Pages */
+
+.auth-page {
+  min-height: 100vh;
+  min-height: 100dvh; /* dynamic viewport - prevents mobile address bar shift */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-6);
+  background: var(--bg-secondary);
+}
+
+.auth-container {
+  width: 100%;
+  max-width: 420px;
+}
+
+.auth-logo {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-3);
+  margin-bottom: var(--space-8);
+  text-decoration: none;
+  color: var(--text-primary);
+  font-weight: var(--font-semibold);
+  font-size: var(--text-xl);
+}
+
+.logo-box {
+  width: 48px;
+  height: 48px;
+  flex-shrink: 0;
+  overflow: hidden;
+}
+
+.logo-box img {
+  display: block;
+  width: 48px;
+  height: 48px;
+  object-fit: contain;
+}
+
+.auth-card {
+  background: var(--bg-primary);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-xl);
+  padding: var(--space-8);
+  box-shadow: var(--shadow-lg);
+  contain: layout; /* reduces layout shift */
+}
+
+.auth-card h1 {
+  font-size: var(--text-2xl);
+  font-weight: var(--font-bold);
+  margin-bottom: var(--space-2);
+}
+
+.auth-subtitle {
+  font-size: var(--text-sm);
+  color: var(--text-secondary);
+  margin-bottom: var(--space-6);
+}
+
+.auth-form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.auth-form .btn {
+  margin-top: var(--space-2);
+}
+
+.input-label-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: var(--space-3);
+  min-height: 1.25rem;
+  line-height: 1.25rem;
+}
+
+.input-label-row .input-label {
+  flex-shrink: 0;
+  margin: 0;
+}
+
+.auth-link {
+  font-size: var(--text-sm);
+  font-weight: var(--font-medium);
+  line-height: 1.25rem;
+  color: var(--primary-600);
+  text-decoration: none;
+  flex-shrink: 0;
+}
+
+.auth-link:hover {
+  text-decoration: underline;
+}
+
+.auth-options {
+  margin-top: calc(-1 * var(--space-2));
+}
+
+.checkbox-label {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-3);
+  font-size: var(--text-sm);
+  color: var(--text-secondary);
+  cursor: pointer;
+}
+
+.checkbox-label input[type="checkbox"] {
+  margin-top: 3px;
+  accent-color: var(--primary-500);
+}
+
+.checkbox-label a {
+  color: var(--primary-600);
+  text-decoration: none;
+}
+
+.checkbox-label a:hover {
+  text-decoration: underline;
+}
+
+.input-hint {
+  font-size: var(--text-xs);
+  color: var(--text-tertiary);
+  margin-top: var(--space-1);
+}
+
+.auth-divider {
+  display: flex;
+  align-items: center;
+  margin: var(--space-6) 0;
+}
+
+.auth-divider::before,
+.auth-divider::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: var(--border-default);
+}
+
+.auth-divider span {
+  padding: 0 var(--space-4);
+  font-size: var(--text-xs);
+  color: var(--text-tertiary);
+}
+
+.auth-social {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.auth-social .btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+}
+
+.auth-footer {
+  text-align: center;
+  margin-top: var(--space-6);
+  font-size: var(--text-sm);
+  color: var(--text-secondary);
+}
+
+.auth-footer a {
+  color: var(--primary-600);
+  font-weight: var(--font-medium);
+  text-decoration: none;
+}
+
+.auth-footer a:hover {
+  text-decoration: underline;
+}
+
+.auth-legal {
+  text-align: center;
+  margin-top: var(--space-6);
+  font-size: var(--text-xs);
+  color: var(--text-tertiary);
+}
+
+.auth-legal a {
+  color: var(--text-secondary);
+  text-decoration: none;
+}
+
+.auth-legal a:hover {
+  text-decoration: underline;
+}
+
+/* 2FA specific */
+.auth-icon {
+  width: 56px;
+  height: 56px;
+  margin: 0 auto var(--space-4);
+  background: var(--primary-50);
+  border-radius: var(--radius-lg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.auth-icon svg {
+  width: 28px;
+  height: 28px;
+  color: var(--primary-600);
+}
+
+.otp-inputs {
+  display: flex;
+  gap: var(--space-2);
+  justify-content: center;
+}
+
+.otp-input {
+  width: 48px;
+  height: 56px;
+  text-align: center;
+  font-size: var(--text-xl);
+  font-weight: var(--font-semibold);
+  font-family: var(--font-sans);
+  border: 2px solid var(--border-default);
+  border-radius: var(--radius-lg);
+  transition: all var(--transition-fast);
+}
+
+.otp-input:focus {
+  outline: none;
+  border-color: var(--primary-500);
+  box-shadow: 0 0 0 3px rgba(20, 184, 166, 0.2);
+}
