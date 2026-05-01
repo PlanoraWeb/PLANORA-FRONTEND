@@ -5,6 +5,7 @@ import "../styles/Component.css";
 import { FiPlus, FiSearch, FiGrid, FiList, FiMoreVertical, FiEdit2, FiTrash2, FiUsers, FiCheckSquare, FiFolder, FiCalendar } from "react-icons/fi";
 import { getProjects, createProject, deleteProject, updateProject } from "../services/projectService";
 
+
 /* ── Random avatar color palette ───────────────────────────────── */
 const AVATAR_COLORS = [
   "linear-gradient(135deg, #00b894, #00cec9)",

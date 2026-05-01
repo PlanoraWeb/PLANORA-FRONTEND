@@ -14,3 +14,14 @@ export {default as Reports} from "./Reports";
 export {default as Settings} from "./Settings";
 export {default as CreateIssue} from "./CreateIssue";
 export {default as Sprint} from "./Sprint"
+export {default as TaskDetail} from "./TaskDetail";
+export {default as ProjectDetail} from "./ProjectDetail";
+export {default as Timeline} from "./Timeline";
+export {default as Calendar} from "./Calendar";
+export {default as Forms} from "./Forms";
+export {default as Goals} from "./Goals";
+export {default as Development} from "./Development";
+export {default as Archive} from "./Archive";
+export {default as Pages} from "./Pages";
+export {default as Scope} from "./Scope";
+export {default as Code} from "./Code";

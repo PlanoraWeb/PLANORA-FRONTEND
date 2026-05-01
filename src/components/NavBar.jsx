@@ -3,8 +3,13 @@ import Button from "../components/Button";
 import Input from "../components/Input";
 import "../styles/App.css";
 import "../styles/DesignSystem.css"
+import { useNavigate } from "react-router-dom";
+
+
+  
 
 function Navbar() {
+  const navigate = useNavigate();
   return (
     <header className="app-navbar">
       <div className="navbar-search">
@@ -36,9 +41,9 @@ function Navbar() {
           </svg>
         </button>
 
-        <a href="/create-issue" className="btn btn-primary btn-sm">
+        <Button onClick={() => navigate("/create-issue")} className="btn btn-primary btn-sm">
           + New Issue
-        </a>
+        </Button>
       </div>
     </header>
   );
