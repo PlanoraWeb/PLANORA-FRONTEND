@@ -12,7 +12,9 @@ import { Link } from "react-router-dom";
 
 
 
-function Sidebar() {
+function Sidebar({user}) {
+  const displayName = user ? `${user.firstName} ${user.lastName}` : "Loading...";
+
   return (
     <aside className="app-sidebar">
       <a href="/dashboard" className="sidebar-logo">
@@ -95,10 +97,10 @@ function Sidebar() {
       </nav>
       {/*BURAYA KULLNICI BİLGİLERİ GELECEK*/}
       <div className="sidebar-user">
-        <div className="avatar avatar-lg">AM</div>
+        {/* <div className="avatar avatar-lg">AM</div> */}
         <div className="sidebar-user-info">
-          <div className="sidebar-user-name">Alex Morgan</div>
-          <div className="sidebar-user-email">alex@planora.com</div>
+          <div className="sidebar-user-name">{displayName}</div>
+          <div className="sidebar-user-email">{user?.email}</div>
         </div>
       </div>
     </aside>
