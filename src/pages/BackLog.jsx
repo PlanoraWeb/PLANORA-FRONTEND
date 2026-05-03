@@ -8,10 +8,6 @@ import Button from "../components/Button";
 function Backlog() {
   return (
     <AppLayout>
-      <div className="app-layout">
-        
-        <main className="app-main">
-
           <div className="app-content">
             {/* Header */}
             <div className="backlog-header">
@@ -115,8 +111,6 @@ function Backlog() {
               Drag rows to reorder. Checkbox and last column = Story Points.
             </p>
           </div>
-        </main>
-      </div>
     </AppLayout>
   );
 }
