@@ -15,5 +15,6 @@ api.interceptors.request.use((config) => {
 export const loginRequest = (data) => api.post("/auth/login", data);
 export const refreshRequest = (refreshToken) => api.post("/auth/refresh", { refreshToken });
 export const registerRequest = (data) => api.post("/auth/register", data);
+export const logoutRequest = () => api.post("/auth/logout");
 
 export default api;
