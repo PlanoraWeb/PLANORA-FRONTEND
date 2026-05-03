@@ -6,8 +6,7 @@ import AppLayout from "../layouts/AppLayout";
 export default function Reports() {
   return (
     <AppLayout>
-        
-        <div className="app-content">
+      <div className="app-content">
           <div className="page-header">
             <h1 className="page-title">Reports & Analytics</h1>
             <p className="page-subtitle">
@@ -142,7 +141,7 @@ export default function Reports() {
               </div>
             </div>
           </div>
-        </div>
+          </div>
     </AppLayout>
   );
 }
