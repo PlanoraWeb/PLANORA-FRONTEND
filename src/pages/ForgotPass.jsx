@@ -4,12 +4,40 @@ import "../styles/DesignSystem.css";
 import "../styles/Auth.css";
 import Button from "../components/Button";
 import Input from "../components/Input";
+import { useState } from "react";
+import { Link } from "react-router-dom";
 
 function ResetPassword() {
-  const handleSubmit = (e) => {
+
+  const [email, setEmail] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [message, setMessage] = useState("");
+  const [error, setError] = useState("");
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    // Burada reset link gönderme işlemi yapılabilir
+    setLoading(true);
+    setError("");
+    setMessage("");
+
+    try {
+      await fetch("http://localhost:8080/auth/forgot-password", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ email }),
+      });
+
+      setMessage("Password reset link has been sent to your email.");
+    } catch (err) {
+      setError("Unable to connect to server. Please try again.", err);
+    } finally {
+      setLoading(false);
+    }
   };
+
+  
 
   return (
     <div className="auth-page">
@@ -43,16 +71,25 @@ function ResetPassword() {
                 className="input"
                 placeholder="alex@company.com"
                 required
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
               />
             </div>
 
-            <Button type="submit" className="btn btn-primary btn-lg" style={{ width: "100%" }}>
-              Send reset link
+            <Button
+              type="submit"
+              style={{ width: "100%" }}
+              disabled={loading}
+            >
+              {loading ? "Sending..." : "Send reset link"}
             </Button>
+
+            {message && <p className="success-message">{message}</p>}
+            {error && <p className="error-message">{error}</p>}
           </form>
 
           <p className="auth-footer">
-            <a href="login">← Back to log in</a>
+            <Link to="/login" className="auth-link">← Back to login</Link>
           </p>
         </div>
       </div>
