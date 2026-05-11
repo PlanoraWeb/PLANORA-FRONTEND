@@ -1,41 +1,3 @@
-.modal-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background-color: rgba(0,0,0,0.5);
-  z-index: 1000;
-}
-
-.modal {
-  position: fixed;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  background: #fff;
-  padding: 24px;
-  border-radius: 8px;
-  z-index: 1001;
-  max-width: 500px;
-  width: 90%;
-  box-shadow: 0 4px 20px rgba(0,0,0,0.2);
-}
-
-.modal-close-btn {
-  position: absolute;
-  top: 12px;
-  right: 12px;
-  border: none;
-  background: none;
-  font-size: 24px;
-  cursor: pointer;
-}
-
-.modal-content {
-  margin-top: 16px;
-}
-
 .link-btn {
   background: none;
   border: none;
@@ -44,4 +6,59 @@
   cursor: pointer;
   padding: 0;
   font: inherit;
+}
+
+
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.3); /* Yarı şeffaf siyah */
+  display: flex;
+  justify-content: flex-end; /* İçeriği sağa yaslar */
+  align-items: stretch; /* Yukarıdan aşağı tam boy yapar */
+  z-index: 1000;
+  backdrop-filter: blur(8px); /* ARKA PLANI BULANIKLAŞTIRAN KRİTİK SATIR */
+}
+
+.modal {
+  background: white;
+  width: 450px; /* Panel genişliği */
+  max-width: 90%;
+  height: 100%;
+  box-shadow: -5px 0 15px rgba(0, 0, 0, 0.1);
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  animation: slideInRight 0.3s ease-out; /* Sağdan gelme efekti */
+}
+
+.modal-close-btn {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  background: none;
+  border: none;
+  font-size: 28px;
+  cursor: pointer;
+  color: #666;
+  z-index: 10;
+}
+
+.modal-content {
+  padding: 40px 30px;
+  overflow-y: auto; /* İçerik uzarsa kaydırılabilir olsun */
+  height: 100%;
+}
+
+/* Sağdan kayarak gelme animasyonu */
+@keyframes slideInRight {
+  from {
+    transform: translateX(100%);
+  }
+  to {
+    transform: translateX(0);
+  }
 }

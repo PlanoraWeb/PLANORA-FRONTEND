@@ -1,17 +1,54 @@
-import React, { useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import "../styles/App.css";
 import "../styles/Component.css";
 import "../styles/DesignSystem.css"
 import "../styles/Inbox.css";
 import AppLayout from "../layouts/AppLayout";
+import { getNotifications, markAllAsRead, markAsRead } from "../services/notificationService";
 
 function Inbox() {
+  const [notifications, setNotifications] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  const fetchNotifications = async () => {
+    try {
+      const res = await getNotifications();
+      setNotifications(res.data?.data ?? []);
+    } catch (error) {
+      console.error("Bildirimler yüklenirken hata oluştu:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
     const t = localStorage.getItem("planora-theme");
     if (t === "dark") {
       document.documentElement.setAttribute("data-theme", "dark");
     }
+    fetchNotifications();
   }, []);
+
+  const handleMarkAllAsRead = async () => {
+    try {
+      await markAllAsRead();
+      setNotifications((prev) => prev.map((n) => ({ ...n, isRead: true })));
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  const handleMarkAsRead = async (id, isRead) => {
+    if (isRead) return;
+    try {
+      await markAsRead(id);
+      setNotifications((prev) =>
+        prev.map((n) => (n.id === id ? { ...n, isRead: true } : n))
+      );
+    } catch (error) {
+      console.error(error);
+    }
+  };
 
   return (
     <AppLayout>
@@ -34,7 +71,7 @@ function Inbox() {
               </p>
             </div>
 
-            <button className="btn btn-ghost btn-sm">
+            <button className="btn btn-ghost btn-sm" onClick={handleMarkAllAsRead}>
               Mark all as read
             </button>
           </div>
@@ -50,52 +87,31 @@ function Inbox() {
 
           {/* INBOX LIST */}
           <div className="card">
+            {loading ? (
+              <div style={{ padding: 20, textAlign: 'center' }}>Loading notifications...</div>
+            ) : notifications.length === 0 ? (
+              <div style={{ padding: 20, textAlign: 'center' }}>No notifications found.</div>
+            ) : (
+              notifications.map((notif) => (
+                <div
+                  key={notif.id}
+                  className={`inbox-item ${!notif.isRead ? "unread" : ""}`}
+                  onClick={() => handleMarkAsRead(notif.id, notif.isRead)}
+                >
+                  <div className="inbox-dot" style={{ opacity: notif.isRead ? 0 : 1 }}></div>
+                  <div className="avatar">{notif.type.charAt(0)}</div>
 
-            <div
-              className="inbox-item unread"
-              onClick={() => (window.location.href = "/task-detail")}
-            >
-              <div className="inbox-dot"></div>
-              <div className="avatar">SC</div>
-
-              <div className="inbox-content">
-                <div className="inbox-meta">
-                  <strong>Sarah Chen</strong> mentioned you in PRO-123 · 15 min ago
+                  <div className="inbox-content">
+                    <div className="inbox-meta">
+                      <strong>{notif.title}</strong> · {new Date(notif.createdAt).toLocaleString()}
+                    </div>
+                    <div className="inbox-preview">
+                      {notif.message}
+                    </div>
+                  </div>
                 </div>
-                <div className="inbox-preview">
-                  "Hey @Alex, can you review the auth flow?"
-                </div>
-              </div>
-            </div>
-
-            <div className="inbox-item unread">
-              <div className="inbox-dot"></div>
-              <div className="avatar">MR</div>
-
-              <div className="inbox-content">
-                <div className="inbox-meta">
-                  <strong>Mike Ross</strong> assigned you · 2 hours ago
-                </div>
-                <div className="inbox-preview">
-                  Fix SceneDelegate memory leak
-                </div>
-              </div>
-            </div>
-
-            <div className="inbox-item">
-              <div style={{ width: 8 }}></div>
-              <div className="avatar">MR</div>
-
-              <div className="inbox-content">
-                <div className="inbox-meta">
-                  <strong>Mike Ross</strong> created project · 2 days ago
-                </div>
-                <div className="inbox-preview">
-                  New project added
-                </div>
-              </div>
-            </div>
-
+              ))
+            )}
           </div>
         </div>
       </main>

@@ -1,21 +1,72 @@
-import React from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import AppLayout from "../layouts/AppLayout";
 import "../styles/Component.css";
 import "../styles/DesignSystem.css";
 import "../styles/App.css";
 import Button from "../components/Button";
+import { getProjects } from "../services/projectService";
+import { getTasksByProject } from "../services/taskService";
 
 function Backlog() {
+  const [projects, setProjects] = useState([]);
+  const [selectedProjectId, setSelectedProjectId] = useState("");
+  const [tasks, setTasks] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    (async () => {
+      try {
+        const res = await getProjects();
+        const list = res.data?.data ?? [];
+        setProjects(list);
+        if (list.length > 0) {
+          setSelectedProjectId(list[0].id);
+        }
+      } catch (err) {
+        console.error("Failed to load projects", err);
+      }
+    })();
+  }, []);
+
+  const loadBacklog = useCallback(async () => {
+    if (!selectedProjectId) return;
+    setLoading(true);
+    try {
+      // backlog=true query parameter is passed here to only get unassigned sprint tasks
+      const res = await getTasksByProject(selectedProjectId, { backlog: true });
+      setTasks(res.data?.data ?? []);
+    } catch (err) {
+      console.error("Failed to load backlog tasks", err);
+    } finally {
+      setLoading(false);
+    }
+  }, [selectedProjectId]);
+
+  useEffect(() => {
+    loadBacklog();
+  }, [selectedProjectId, loadBacklog]);
+
   return (
     <AppLayout>
-      <div className="app-layout">
-        
-        <main className="app-main">
-
           <div className="app-content">
             {/* Header */}
             <div className="backlog-header">
-              <h1 className="page-title">Backlog</h1>
+              <div className="board-header-left" style={{ display: "flex", gap: "1rem", alignItems: "center" }}>
+                <h1 className="page-title">Backlog</h1>
+                <select
+                  className="input"
+                  style={{ width: 200, marginTop: 0 }}
+                  value={selectedProjectId}
+                  onChange={(e) => setSelectedProjectId(e.target.value)}
+                >
+                  {projects.length === 0 && <option value="">No projects</option>}
+                  {projects.map((p) => (
+                    <option key={p.id} value={p.id}>
+                      {p.projectName}
+                    </option>
+                  ))}
+                </select>
+              </div>
               <button className="btn btn-primary btn-sm">
                 Convert to sprint
               </button>
@@ -41,67 +92,30 @@ function Backlog() {
                   <span style={{ flex: 1 }}>ID</span>
                   <span style={{ flex: 2 }}>Title</span>
                   <span>Priority</span>
-                  <span style={{ minWidth: 40, textAlign: "center" }}>
-                    Points
+                  <span style={{ minWidth: 60, textAlign: "center" }}>
+                    Type
                   </span>
                 </div>
 
-                {/* Row 1 */}
-                <div className="backlog-row">
-                  <input type="checkbox" />
-                  <a href="/task-details" style={{ flex: 1 }}>
-                    PRO-123
-                  </a>
-                  <span style={{ flex: 2 }}>
-                    Design new authentication flow screens
-                  </span>
-                  <span className="badge badge-error">High</span>
-                  <span style={{ minWidth: 40, textAlign: "center" }}>5</span>
-                </div>
-
-                {/* Row 2 */}
-                <div className="backlog-row">
-                  <input type="checkbox" />
-                  <span style={{ flex: 1 }}>PRO-124</span>
-                  <span style={{ flex: 2 }}>
-                    User profile page redesign
-                  </span>
-                  <span className="badge badge-warning">Medium</span>
-                  <span style={{ minWidth: 40, textAlign: "center" }}>3</span>
-                </div>
-
-                {/* Row 3 */}
-                <div className="backlog-row">
-                  <input type="checkbox" />
-                  <span style={{ flex: 1 }}>PRO-125</span>
-                  <span style={{ flex: 2 }}>
-                    API documentation update
-                  </span>
-                  <span className="badge badge-gray">Low</span>
-                  <span style={{ minWidth: 40, textAlign: "center" }}>2</span>
-                </div>
-
-                {/* Row 4 */}
-                <div className="backlog-row">
-                  <input type="checkbox" />
-                  <span style={{ flex: 1 }}>PRO-126</span>
-                  <span style={{ flex: 2 }}>
-                    Setup CI/CD pipeline
-                  </span>
-                  <span className="badge badge-warning">Medium</span>
-                  <span style={{ minWidth: 40, textAlign: "center" }}>8</span>
-                </div>
-
-                {/* Row 5 */}
-                <div className="backlog-row">
-                  <input type="checkbox" />
-                  <span style={{ flex: 1 }}>PRO-127</span>
-                  <span style={{ flex: 2 }}>
-                    Mobile responsive fixes
-                  </span>
-                  <span className="badge badge-gray">Low</span>
-                  <span style={{ minWidth: 40, textAlign: "center" }}>1</span>
-                </div>
+                {loading ? (
+                   <div style={{ padding: 20, textAlign: "center" }}>Loading tasks...</div>
+                ) : tasks.length === 0 ? (
+                   <div style={{ padding: 20, textAlign: "center" }}>No backlog tasks found.</div>
+                ) : (
+                  tasks.map((task) => (
+                    <div className="backlog-row" key={task.id}>
+                      <input type="checkbox" />
+                      <span style={{ flex: 1, fontSize: 12 }}>{task.id.slice(0, 8)}</span>
+                      <span style={{ flex: 2 }}>{task.title}</span>
+                      <span className={`badge ${task.priority === 'HIGH' || task.priority === 'URGENT' ? 'badge-error' : task.priority === 'MEDIUM' ? 'badge-warning' : 'badge-gray'}`}>
+                        {task.priority}
+                      </span>
+                      <span style={{ minWidth: 60, textAlign: "center", textTransform: 'capitalize' }}>
+                        {task.type.toLowerCase()}
+                      </span>
+                    </div>
+                  ))
+                )}
               </div>
             </div>
 
@@ -112,11 +126,9 @@ function Backlog() {
                 marginTop: "var(--space-4)",
               }}
             >
-              Drag rows to reorder. Checkbox and last column = Story Points.
+              Drag rows to reorder. Checkbox and last column = Task Type.
             </p>
           </div>
-        </main>
-      </div>
     </AppLayout>
   );
 }

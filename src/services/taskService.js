@@ -1,7 +1,8 @@
 import api from './authService';
 
 // ── Task CRUD ──────────────────────────────────────────────────
-export const getTasksByProject = (projectId) => api.get(`/tasks/project/${projectId}`);
+export const getMyTasks = () => api.get('/tasks/me');
+export const getTasksByProject = (projectId, params) => api.get(`/tasks/project/${projectId}`, { params });
 export const createTask = (projectId, data) => api.post(`/tasks/project/${projectId}`, data);
 export const getTaskById = (id) => api.get(`/tasks/${id}`);
 export const updateTask = (id, data) => api.put(`/tasks/${id}`, data);

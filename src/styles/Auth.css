@@ -15,6 +15,29 @@
   max-width: 420px;
 }
 
+.auth-error {
+  color: #ff4d4f;
+  margin-bottom: 12px;
+  font-size: 14px;
+}
+
+/* Spinner */
+.spinner {
+  width: 18px;
+  height: 18px;
+  border: 2px solid rgba(255,255,255,0.3);
+  border-top: 2px solid white;
+  border-radius: 50%;
+  display: inline-block;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
 .auth-logo {
   display: flex;
   align-items: center;
