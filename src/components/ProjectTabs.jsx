@@ -1,36 +1,39 @@
-export default function ProjectTabs({ activeTab, onTabChange }) {
+export default function ProjectTabs({
+  activeTab,
+  onTabChange,
+  projectName = "Project workspace",
+  projectMeta = "Project",
+  actions = null,
+}) {
   const tabs = [
-    { key: "overview", label: "Özet" },
-    { key: "board", label: "Durum panosu" },
-    { key: "backlog", label: "Liste" },
-    { key: "sprints", label: "Sprint" },
-    { key: "timeline", label: "Zaman Çizelgesi" },
-    { key: "calendar", label: "Takvim" },
-    { key: "forms", label: "Formlar" },
-    { key: "goals", label: "Amaçlar" },
-    { key: "development", label: "Geliştirme" },
-    { key: "archive", label: "Arşivlenen Biletler" },
-    { key: "pages", label: "Sayfalar" },
-    { key: "scope", label: "Kapsam" },
-    { key: "code", label: "Kod" },
+    { key: "overview", label: "Overview" },
+    { key: "board", label: "Board" },
+    { key: "backlog", label: "Backlog" },
+    { key: "sprints", label: "Sprints" },
+    { key: "timeline", label: "Timeline" },
+    { key: "calendar", label: "Calendar" },
+    { key: "forms", label: "Intake" },
+    { key: "goals", label: "Goals" },
+    { key: "development", label: "Development" },
+    { key: "archive", label: "Archive" },
+    { key: "pages", label: "Knowledge" },
+    { key: "scope", label: "Scope" },
+    { key: "code", label: "Release" },
   ];
 
   return (
     <>
-      {/* PROJECT HEADER */}
       <div className="board-project-context">
-        <span className="board-area-label">Alan</span>
-        <h1 className="board-project-title">Q3 Roadmap</h1>
+        <span className="board-area-label">{projectMeta}</span>
+        <h1 className="board-project-title">{projectName}</h1>
 
-        <div className="board-header-actions">
-          <button className="navbar-btn">⋯</button>
-        </div>
+        <div className="board-header-actions">{actions}</div>
       </div>
 
-      {/* TABS */}
       <nav className="project-main-nav">
         {tabs.map((tab) => (
           <button
+            type="button"
             key={tab.key}
             className={`project-tab ${activeTab === tab.key ? "active" : ""}`}
             onClick={() => onTabChange(tab.key)}

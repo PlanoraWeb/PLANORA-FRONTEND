@@ -1,35 +1,23 @@
-import React from "react";
-import "../styles/Modal.css"; // Modal için ayrı CSS
-import { useEffect } from "react";
+import React, { useEffect } from "react";
+import "../styles/Modal.css";
 
 function Modal({ children, onClose }) {
-  // useEffect(() => {
-  //   const handleEsc = (e) => {
-  //     if (e.key === "Escape") onClose();
-  //   };
-  //   document.addEventListener("keydown", handleEsc);
-  //   return () => document.removeEventListener("keydown", handleEsc);
-  // }, [onClose]);
   useEffect(() => {
-  document.body.style.overflow = 'hidden'; // Açıldığında kaydırmayı kapat
-  return () => {
-    document.body.style.overflow = 'unset'; // Kapandığında aç
-  };
-}, []);
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = "unset";
+    };
+  }, []);
+
   return (
-    <>
-      <div className="modal-overlay" onClick={onClose}>
-        <div
-          className="modal"
-          onClick={(e) => e.stopPropagation()}
-        >
-          <button className="modal-close-btn" onClick={onClose}>
-            ×
-          </button>
-          <div className="modal-content">{children}</div>
-        </div>
+    <div className="side-modal-overlay" onClick={onClose}>
+      <div className="side-modal" onClick={(event) => event.stopPropagation()}>
+        <button className="side-modal-close" onClick={onClose}>
+          x
+        </button>
+        <div className="side-modal-content">{children}</div>
       </div>
-    </>
+    </div>
   );
 }
 

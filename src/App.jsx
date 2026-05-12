@@ -34,6 +34,7 @@ function App() {
           <Route path="/backlog" element={<BackLog />} />
           <Route path="/sprint" element={<Sprint />} />
           <Route path="/task-details/:id" element={<TaskDetail />} />
+          <Route path="/project-detail" element={<ProjectDetail />} />
           <Route path="/project-detail/:id" element={<ProjectDetail />} />
           <Route path="/timeline" element={<Timeline />} />
           <Route path="/calendar" element={<Calendar />} />

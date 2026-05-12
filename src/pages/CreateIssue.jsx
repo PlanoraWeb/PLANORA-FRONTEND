@@ -4,6 +4,7 @@ import AppLayout from "../layouts/AppLayout";
 import { getProjects } from "../services/projectService";
 import { createTask, getStatusesByProject } from "../services/taskService";
 import "../styles/PageForms.css";
+import { useSearchParams } from "react-router-dom";
 
 const initialForm = {
   projectId: "",
@@ -25,6 +26,7 @@ function getErrorMessage(error, fallback) {
 }
 
 function CreateIssue() {
+  const [searchParams] = useSearchParams();
   const [projects, setProjects] = useState([]);
   const [statuses, setStatuses] = useState([]);
   const [form, setForm] = useState(initialForm);
@@ -51,10 +53,16 @@ function CreateIssue() {
     try {
       const res = await getProjects();
       const list = res.data?.data ?? [];
+      const requestedProjectId = searchParams.get("projectId");
       setProjects(list);
       setForm((current) => ({
         ...current,
-        projectId: current.projectId || list[0]?.id || "",
+        projectId:
+          current.projectId ||
+          (requestedProjectId &&
+          list.some((project) => project.id === requestedProjectId)
+            ? requestedProjectId
+            : list[0]?.id || ""),
       }));
     } catch (error) {
       setMessage({
