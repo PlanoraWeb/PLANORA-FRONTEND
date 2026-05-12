@@ -4,6 +4,7 @@ import "../styles/App.css";
 import "../styles/Component.css";
 import "../styles/DesignSystem.css";
 import { getMyTasks } from "../services/taskService";
+import { Link } from "react-router-dom";
 
 
 function getStatusClass(statusName) {
@@ -67,9 +68,9 @@ export default function MyTasks() {
                 <div style={{ padding: "12px", color: "var(--text-tertiary)" }}>No tasks assigned to you.</div>
               ) : (
                 tasks.map((task) => (
-                  <a
+                  <Link
                     key={task.id}
-                    href={`/task/${task.id}`}
+                    to={`/task-details/${task.id}`}
                     style={{
                       display: "flex",
                       justifyContent: "space-between",
@@ -90,7 +91,7 @@ export default function MyTasks() {
                     <span className={getStatusClass(task.status?.name)}>
                       {task.status?.name || 'Unknown'}
                     </span>
-                  </a>
+                  </Link>
                 ))
               )}
             </div>
@@ -99,4 +100,4 @@ export default function MyTasks() {
       </main>
     </AppLayout>
   );
-}
+}

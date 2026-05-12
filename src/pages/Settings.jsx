@@ -134,7 +134,7 @@ function Settings() {
       <div className="service-page-header">
         <div>
           <h1>Settings</h1>
-          <p>Manage your profile and password through userService.</p>
+          <p>Manage your profile settings.</p>
         </div>
       </div>
 

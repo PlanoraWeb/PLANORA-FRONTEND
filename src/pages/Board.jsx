@@ -21,6 +21,12 @@ import {
   getStatusesByProject,
 } from "../services/taskService";
 
+const STATUS_DISPLAY_MAP = {
+  TODO: "To Do",
+  IN_PROGRESS: "In Progress",
+  DONE: "Done",
+};
+
 /* ── Avatar Colors ────────────────────────────────────────────── */
 const AVATAR_COLORS = [
   "linear-gradient(135deg, #6c5ce7, #a29bfe)",
@@ -276,7 +282,7 @@ function KanbanColumn({ status, tasks, colorIndex, onAddTask, onEditTask, onDele
       <div className="kanban-column-header">
         <div className="kanban-column-title">
           <span className="kanban-column-dot" style={{ background: color }} />
-          {status.name}
+          {STATUS_DISPLAY_MAP[status.code] || status.name}
           <span className="kanban-column-count">{tasks.length}</span>
         </div>
         <button className="kanban-column-add" onClick={onAddTask} title="Add task">

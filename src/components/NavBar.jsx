@@ -4,12 +4,13 @@ import Input from "../components/Input";
 import "../styles/App.css";
 import "../styles/DesignSystem.css"
 import { useNavigate } from "react-router-dom";
-
+import { useOsShortcut } from "../hooks/useOsShortcut";
 
   
 
 function Navbar() {
   const navigate = useNavigate();
+  const shortcut = useOsShortcut();
   return (
     <header className="app-navbar">
       <div className="navbar-search">
@@ -20,7 +21,7 @@ function Navbar() {
 
         <input
           type="text"
-          placeholder="Search projects, tasks... (⌘K)"
+          placeholder={`Search... (${shortcut})`}
         />
       </div>
 
