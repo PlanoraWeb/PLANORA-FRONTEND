@@ -127,7 +127,7 @@ function Team() {
       <div className="service-page-header">
         <div>
           <h1>Team</h1>
-          <p>Add or remove project members through projectService.</p>
+          <p>Manage your project team members.</p>
         </div>
       </div>
 
