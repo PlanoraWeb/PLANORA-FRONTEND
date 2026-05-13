@@ -1,60 +1,45 @@
-import "../styles/DesignSystem.css";
-import "../styles/Board.css";
-import "../styles/App.css";
-import AppLayout from "../layouts/AppLayout";
-import { useState } from "react";
-import ProjectTabs from "../components/ProjectTabs";
+import ProjectWorkspaceShell from "../components/ProjectWorkspaceShell";
+import { useProjectWorkspace } from "../hooks/useProjectWorkspace";
 
 export default function ArchivePage() {
-    const [activeTab, setActiveTab] = useState("archive");
-
-    const handleTab = (tab) => {
-        if (tab === "overview") return (window.location.href = "/project-detail");
-        if (tab === "board") return (window.location.href = "/board");
-        if (tab === "backlog") return (window.location.href = "/backlog");
-        if (tab === "sprints") return (window.location.href = "/sprint");
-        if (tab === "timeline") return (window.location.href = "/timeline");
-        if (tab === "calendar") return (window.location.href = "/calendar");
-        if (tab === "forms") return (window.location.href = "/forms");
-        if (tab === "goals") return (window.location.href = "/goals");
-        if (tab === "development") return (window.location.href = "/development");
-        if (tab === "archive") return (window.location.href = "/archive");
-        if (tab === "pages") return (window.location.href = "/pages");
-        if (tab === "scope") return (window.location.href = "/scope");
-        if (tab === "code") return (window.location.href = "/code");
-
-        setActiveTab(tab);
-    };
+  const workspace = useProjectWorkspace("archive");
+  const archivedTasks = workspace.insights?.archivedTasks || [];
 
   return (
-
-    <AppLayout>
-           <ProjectTabs activeTab={activeTab} onTabChange={handleTab} />
-          {/* EMPTY STATE */}
-          <div className="card" style={{ minHeight: "400px" }}>
-            <div className="card-body">
-
-              <div className="empty-state">
-                <div className="empty-state-icon">
-                  <svg width="48" height="48" viewBox="0 0 24 24" fill="none"
-                    stroke="currentColor" strokeWidth="1.5">
-                    <polyline points="3 6 5 6 21 6" />
-                    <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6" />
-                  </svg>
-                </div>
-
-                <h3 className="empty-state-title">
-                  Arşivlenen biletler
-                </h3>
-
-                <p className="empty-state-description">
-                  Tamamlanan veya iptal edilen biletler burada görünür.
-                </p>
-              </div>
-
+    <ProjectWorkspaceShell {...workspace}>
+      <div className="card">
+        <div className="card-header">
+          <h3>Completed work archive</h3>
+        </div>
+        <div className="card-body">
+          {archivedTasks.length === 0 ? (
+            <div className="service-empty">No archived tasks yet.</div>
+          ) : (
+            <div className="table-container" style={{ border: "none" }}>
+              <table className="table">
+                <thead>
+                  <tr>
+                    <th>Task</th>
+                    <th>Type</th>
+                    <th>Priority</th>
+                    <th>Finished</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {archivedTasks.map((task) => (
+                    <tr key={task.id}>
+                      <td>{task.title}</td>
+                      <td>{task.type}</td>
+                      <td>{task.priority}</td>
+                      <td>{new Date(task.updatedAt).toLocaleDateString()}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
-          </div>
-
-</AppLayout>
+          )}
+        </div>
+      </div>
+    </ProjectWorkspaceShell>
   );
 }

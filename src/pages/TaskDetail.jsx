@@ -1,12 +1,11 @@
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import "../styles/App.css";
 import "../styles/Component.css";
 import "../styles/DesignSystem.css";
 import AppLayout from "../layouts/AppLayout";
-import { useParams, useNavigate } from "react-router-dom";
+import { Link, useParams } from "react-router-dom";
 import { getTaskById, updateTask } from "../services/taskService";
-
-
+import { getProjectById } from "../services/projectService";
 
 const getPriorityClass = (priority) => {
   switch (priority) {
@@ -23,23 +22,44 @@ const getPriorityClass = (priority) => {
   }
 };
 
+function formatDateInput(date) {
+  if (!date) return "";
+  return new Date(date).toISOString().split("T")[0];
+}
+
 export default function TaskDetail() {
   const { id } = useParams();
-  const navigate = useNavigate();
-
   const [task, setTask] = useState(null);
+  const [project, setProject] = useState(null);
+  const [form, setForm] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [comments, setComments] = useState([]);
-  const [commentText, setCommentText] = useState("");
+  const [saving, setSaving] = useState(false);
+  const [message, setMessage] = useState("");
 
   useEffect(() => {
     const fetchTask = async () => {
       try {
         const res = await getTaskById(id);
-        setTask(res.data?.data);
-        setComments(res.data?.data?.comments || []);
+        const taskData = res.data?.data;
+        setTask(taskData);
+
+        if (taskData?.project?.id) {
+          const projectRes = await getProjectById(taskData.project.id);
+          setProject(projectRes.data?.data);
+        }
+
+        setForm({
+          title: taskData?.title || "",
+          description: taskData?.description || "",
+          priority: taskData?.priority || "MEDIUM",
+          type: taskData?.type || "TASK",
+          statusId: taskData?.statusId || taskData?.status?.id || "",
+          assigneeId: taskData?.assignee?.id || "",
+          dueDate: formatDateInput(taskData?.dueDate),
+        });
       } catch (err) {
         console.error("Failed to fetch task", err);
+        setMessage("Task details could not be loaded.");
       } finally {
         setLoading(false);
       }
@@ -48,45 +68,50 @@ export default function TaskDetail() {
     if (id) fetchTask();
   }, [id]);
 
-  const handleStatusChange = async (newStatus) => {
-    setTask((prev) => ({
-      ...prev,
-      status: { ...(prev?.status || {}), code: newStatus },
-    }));
+  const updateField = (name, value) => {
+    setForm((current) => ({ ...current, [name]: value }));
+    setMessage("");
+  };
 
+  const handleSave = async () => {
+    if (!form) return;
+    setSaving(true);
     try {
-      await updateTask(id, { status: newStatus });
+      const payload = {
+        title: form.title.trim(),
+        description: form.description.trim() || undefined,
+        priority: form.priority,
+        type: form.type,
+        statusId: form.statusId,
+        assigneeId: form.assigneeId || null,
+        dueDate: form.dueDate ? new Date(form.dueDate).toISOString() : null,
+      };
+      const res = await updateTask(id, payload);
+      const updatedTask = res.data?.data;
+      setTask((current) => ({
+        ...current,
+        ...updatedTask,
+        title: payload.title,
+        description: payload.description,
+        priority: payload.priority,
+        type: payload.type,
+        dueDate: payload.dueDate,
+        statusId: payload.statusId,
+      }));
+      setMessage("Task updated successfully.");
     } catch (err) {
-      console.error("Failed to update status", err);
+      console.error("Failed to update task", err);
+      setMessage(
+        err.response?.data?.error?.message ||
+          err.response?.data?.message ||
+          "Task could not be updated."
+      );
+    } finally {
+      setSaving(false);
     }
   };
 
-  const handleAddComment = async () => {
-      if (!commentText.trim()) return;
-
-      const newComment = {
-        id: Date.now().toString(),
-        text: commentText,
-        author: {
-          firstName: "You",
-          lastName: "",
-        },
-        createdAt: new Date().toISOString(),
-      };
-
-      // optimistic update
-      setComments((prev) => [...prev, newComment]);
-      setCommentText("");
-
-      try {
-        // backend varsa buraya API koyarsın
-        // await createComment(task.id, commentText);
-      } catch (err) {
-        console.error("Failed to add comment", err);
-      }
-    };
-
-  if (loading) {
+  if (loading || !form) {
     return (
       <AppLayout>
         <div className="app-content">Loading...</div>
@@ -96,192 +121,175 @@ export default function TaskDetail() {
 
   return (
     <AppLayout>
-      <main className="app-main">
-        <div className="app-content">
-
-          {/* PROJECT HEADER (Planora style) */}
-          <div className="board-project-context" style={{ marginBottom: "var(--space-4)" }}>
-            <span className="board-area-label">Task</span>
-
-            <h1 className="board-project-title" style={{ flex: 1 }}>
-              {task?.title}
-            </h1>
-
-            <div className="board-header-actions">
-              <button className="btn btn-ghost btn-sm">⋯</button>
-            </div>
-          </div>
-
-          {/* MAIN LAYOUT */}
-          <div className="task-detail-layout" style={{ display: "grid", gridTemplateColumns: "2fr 1fr", gap: "var(--space-6)" }}>
-
-            {/* LEFT */}
-            <div className="task-detail-main">
-
-              {/* PROJECT LINK */}
-              <div style={{ marginBottom: 12 }}>
-                <div className="board-area-label">Project</div>
-
-                <div
-                  style={{
-                    fontWeight: 700,
-                    fontSize: 18,
-                    color: "var(--primary-600)",
-                    cursor: "pointer",
-                    letterSpacing: "-0.2px",
-                  }}
-                  onClick={() =>
-                    navigate(`/project-detail/${task?.project?.id}`)
-                  }
-                >
-                  {task?.project?.projectName || "-"}
-                </div>
-              </div>
-
-              {/* TASK ID */}
-              <div className="badge badge-gray" style={{ marginBottom: 10 }}>
-                {task?.id}
-              </div>
-
-              {/* DESCRIPTION CARD */}
-              <div className="card" style={{ marginTop: 16 }}>
-                <div className="card-header">
-                  <h3>Description</h3>
-                </div>
-                <div className="card-body">
-                  <div className="task-description">
-                    {task?.description || "No description"}
-                  </div>
-                </div>
-              </div>
-
-              {/* COMMENTS */}
-              <div className="card" style={{ marginTop: 16 }}>
-                <div className="card-header">
-                  <h3>Comments</h3>
-                </div>
-
-                <div className="card-body">
-
-                  {/* Comment List */}
-                  <div style={{ display: "flex", flexDirection: "column", gap: 12, marginBottom: 16 }}>
-                    {comments.length === 0 && (
-                      <span style={{ color: "var(--text-tertiary)", fontSize: 14 }}>
-                        No comments yet
-                      </span>
-                    )}
-
-                    {comments.map((c) => (
-                      <div
-                        key={c.id}
-                        style={{
-                          padding: 10,
-                          border: "1px solid var(--border-subtle)",
-                          borderRadius: 8,
-                          background: "var(--bg-secondary)",
-                        }}
-                      >
-                        <div style={{ fontWeight: 600, fontSize: 13 }}>
-                          {c.author?.firstName} {c.author?.lastName}
-                        </div>
-
-                        <div style={{ fontSize: 14, marginTop: 4 }}>
-                          {c.text}
-                        </div>
-
-                        <div style={{ fontSize: 11, color: "var(--text-tertiary)", marginTop: 6 }}>
-                          {new Date(c.createdAt).toLocaleString("tr-TR")}
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-
-                  {/* Input */}
-                  <div style={{ display: "flex", gap: 8 }}>
-                    <input
-                      className="input"
-                      placeholder="Write a comment..."
-                      value={commentText}
-                      onChange={(e) => setCommentText(e.target.value)}
-                    />
-
-                    <button
-                      className="btn btn-primary btn-sm"
-                      onClick={handleAddComment}
-                    >
-                      Send
-                    </button>
-                  </div>
-
-                </div>
-              </div>
-
-            </div>
-
-            
-            {/* RIGHT SIDEBAR */}
-            <div className="task-detail-sidebar">
-
-              <div className="card">
-                <div className="card-header">
-                  <h3>Details</h3>
-                </div>
-
-                <div className="card-body">
-
-                  {/* STATUS */}
-                  <div className="task-field task-field-editable">
-                    <span>Status</span>
-
-                    <select
-                      className="status-select"
-                      value={task?.status?.code || ""}
-                      onChange={(e) => handleStatusChange(e.target.value)}
-                    >
-                      <option value="TODO">To Do</option>
-                      <option value="IN_PROGRESS">In Progress</option>
-                      <option value="DONE">Done</option>
-                    </select>
-                  </div>
-
-                  {/* ASSIGNEE */}
-                  <div className="task-field">
-                    <span style={{ fontSize: 12, color: "var(--text-tertiary)" }}>
-                      Assignee
-                    </span>
-                    <span style={{ fontSize: 14, fontWeight: 500 }}>
-                      {task?.assignee?.firstName} {task?.assignee?.lastName}
-                    </span>
-                  </div>
-
-                  {/* PRIORITY */}
-                 <div className="task-field">
-                  <span style={{ fontSize: 12, color: "var(--text-tertiary)" }}>
-                    Priority
-                  </span>
-                  <span className={`badge ${getPriorityClass(task?.priority)}`}>
-                    {task?.priority}
-                  </span>
-                </div>
-
-                  {/* DUE DATE */}
-                  <div className="task-field">
-                    <span style={{ fontSize: 12, color: "var(--text-tertiary)" }}>Due Date </span>
-                    <span>
-                      {task?.dueDate
-                        ? new Date(task.dueDate).toLocaleDateString("tr-TR")
-                        : "-"}
-                    </span>
-                  </div>
-
-                </div>
-              </div>
-
-            </div>
-          </div>
-
+      <div className="page-header">
+        <div>
+          <h1 className="page-title">{task?.title}</h1>
+          <p className="page-subtitle">Task detail and execution settings.</p>
         </div>
-      </main>
+      </div>
+
+      {message && (
+        <div className="card" style={{ marginBottom: "var(--space-4)" }}>
+          <div className="card-body">{message}</div>
+        </div>
+      )}
+
+      <div className="task-detail-layout">
+        <div className="task-detail-main">
+          <div className="card">
+            <div className="card-header">
+              <h3>Task content</h3>
+            </div>
+            <div className="card-body" style={{ display: "grid", gap: "var(--space-4)" }}>
+              <div className="service-field">
+                <label htmlFor="task-title">Title</label>
+                <input
+                  id="task-title"
+                  className="input"
+                  value={form.title}
+                  onChange={(event) => updateField("title", event.target.value)}
+                />
+              </div>
+
+              <div className="service-field">
+                <label htmlFor="task-description">Description</label>
+                <textarea
+                  id="task-description"
+                  value={form.description}
+                  onChange={(event) => updateField("description", event.target.value)}
+                />
+              </div>
+
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
+                <div className="service-field">
+                  <label htmlFor="task-type">Type</label>
+                  <select
+                    id="task-type"
+                    value={form.type}
+                    onChange={(event) => updateField("type", event.target.value)}
+                  >
+                    <option value="TASK">Task</option>
+                    <option value="BUG">Bug</option>
+                    <option value="STORY">Story</option>
+                  </select>
+                </div>
+
+                <div className="service-field">
+                  <label htmlFor="task-priority">Priority</label>
+                  <select
+                    id="task-priority"
+                    value={form.priority}
+                    onChange={(event) => updateField("priority", event.target.value)}
+                  >
+                    <option value="LOW">Low</option>
+                    <option value="MEDIUM">Medium</option>
+                    <option value="HIGH">High</option>
+                    <option value="URGENT">Urgent</option>
+                  </select>
+                </div>
+              </div>
+
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
+                <div className="service-field">
+                  <label htmlFor="task-status">Status</label>
+                  <select
+                    id="task-status"
+                    value={form.statusId}
+                    onChange={(event) => updateField("statusId", event.target.value)}
+                  >
+                    {(project?.statuses || []).map((status) => (
+                      <option key={status.id} value={status.id}>
+                        {status.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div className="service-field">
+                  <label htmlFor="task-assignee">Assignee</label>
+                  <select
+                    id="task-assignee"
+                    value={form.assigneeId}
+                    onChange={(event) => updateField("assigneeId", event.target.value)}
+                  >
+                    <option value="">Unassigned</option>
+                    {(project?.members || []).map((member) => (
+                      <option
+                        key={member.user?.id || member.userId}
+                        value={member.user?.id || member.userId}
+                      >
+                        {member.user?.firstName} {member.user?.lastName}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+
+              <div className="service-field">
+                <label htmlFor="task-due-date">Due date</label>
+                <input
+                  id="task-due-date"
+                  type="date"
+                  value={form.dueDate}
+                  onChange={(event) => updateField("dueDate", event.target.value)}
+                />
+              </div>
+
+              <div className="service-actions">
+                <button className="btn btn-primary" onClick={handleSave} disabled={saving}>
+                  {saving ? "Saving..." : "Save task"}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="task-detail-sidebar">
+          <div className="card" style={{ marginBottom: "var(--space-4)" }}>
+            <div className="card-header">
+              <h3>Meta</h3>
+            </div>
+            <div className="card-body" style={{ display: "grid", gap: 12 }}>
+              <MetaRow label="Task ID" value={task?.id} />
+              <MetaRow
+                label="Project"
+                value={
+                  <Link to={`/project-detail?projectId=${task?.project?.id}`}>
+                    {task?.project?.projectName || "-"}
+                  </Link>
+                }
+              />
+              <MetaRow
+                label="Status"
+                value={<span className="badge badge-primary">{task?.status?.name || "-"}</span>}
+              />
+              <MetaRow label="Created" value={new Date(task?.createdAt).toLocaleString()} />
+              <MetaRow label="Updated" value={new Date(task?.updatedAt).toLocaleString()} />
+            </div>
+          </div>
+
+          <div className="card">
+            <div className="card-header">
+              <h3>Execution snapshot</h3>
+            </div>
+            <div className="card-body" style={{ display: "grid", gap: 12 }}>
+              <div className={`badge ${getPriorityClass(form.priority)}`}>{form.priority}</div>
+              <div style={{ color: "var(--text-secondary)", fontSize: 14 }}>
+                {form.assigneeId ? "Assigned and ready for execution." : "Waiting for assignment."}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
     </AppLayout>
+  );
+}
+
+function MetaRow({ label, value }) {
+  return (
+    <div style={{ display: "flex", justifyContent: "space-between", gap: 12 }}>
+      <span style={{ color: "var(--text-secondary)" }}>{label}</span>
+      <strong style={{ textAlign: "right", wordBreak: "break-word" }}>{value}</strong>
+    </div>
   );
 }

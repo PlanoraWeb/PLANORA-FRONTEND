@@ -1,65 +1,94 @@
-import AppLayout from "../layouts/AppLayout";
-import "../styles/Component.css";
-import "../styles/DesignSystem.css";
-import "../styles/Board.css";
-import "../styles/App.css";
-import { useState } from "react";
-import Board from "../components/ProjectTabs";
+import ProjectWorkspaceShell from "../components/ProjectWorkspaceShell";
+import { useProjectWorkspace } from "../hooks/useProjectWorkspace";
 
 export default function Goals() {
-  const [activeTab, setActiveTab] = useState("goals");
-
-  const handleTab = (tab) => {
-    if (tab === "overview") return (window.location.href = "/project-detail");
-    if (tab === "board") return (window.location.href = "/board");
-    if (tab === "backlog") return (window.location.href = "/backlog");
-    if (tab === "sprints") return (window.location.href = "/sprint");
-    if (tab === "timeline") return (window.location.href = "/timeline");
-    if (tab === "calendar") return (window.location.href = "/calendar");
-    if (tab === "forms") return (window.location.href = "/forms");
-    if (tab === "goals") return (window.location.href = "/goals");
-    if (tab === "development") return (window.location.href = "/development");
-    if (tab === "archive") return (window.location.href = "/archive");
-    if (tab === "pages") return (window.location.href = "/pages");
-    if (tab === "scope") return (window.location.href = "/scope");
-    if (tab === "code") return (window.location.href = "/code");
-
-    setActiveTab(tab);
-  };
+  const workspace = useProjectWorkspace("goals");
+  const insights = workspace.insights;
+  const activeSprint = insights?.summary?.activeSprint;
+  const sprintSummaries = insights?.sprintSummaries || [];
 
   return (
-    <AppLayout>
-
-      {/* TABS */}
-      <Board activeTab={activeTab} onTabChange={handleTab} />
-
-      {/* EMPTY STATE */}
-      <div className="card" style={{ minHeight: "400px" }}>
-        <div className="card-body">
-          <div className="empty-state">
-            <div className="empty-state-icon">
-              <svg
-                width="48"
-                height="48"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="1.5"
-              >
-                <circle cx="12" cy="12" r="10" />
-                <circle cx="12" cy="12" r="6" />
-                <circle cx="12" cy="12" r="2" />
-              </svg>
-            </div>
-
-            <h3 className="empty-state-title">Amaçlar</h3>
-
-            <p className="empty-state-description">
-              Proje hedeflerini belirleyin ve ilerlemeyi takip edin.
-            </p>
+    <ProjectWorkspaceShell {...workspace}>
+      <div
+        style={{
+          display: "grid",
+          gridTemplateColumns: "1.2fr 1fr",
+          gap: "var(--space-6)",
+        }}
+      >
+        <section className="card">
+          <div className="card-header">
+            <h3>Active focus</h3>
           </div>
-        </div>
+          <div className="card-body" style={{ display: "grid", gap: "var(--space-4)" }}>
+            <GoalMetric
+              label="Project completion"
+              value={`${insights?.summary?.completionRate || 0}%`}
+              percent={insights?.summary?.completionRate || 0}
+            />
+            <GoalMetric
+              label="Open work remaining"
+              value={`${insights?.summary?.openTasks || 0} tasks`}
+              percent={
+                insights?.summary?.totalTasks
+                  ? Math.round(
+                      ((insights.summary.openTasks || 0) / insights.summary.totalTasks) *
+                        100
+                    )
+                  : 0
+              }
+              color="var(--warning)"
+            />
+            <div>
+              <div className="task-section-title">Sprint goal</div>
+              <div className="task-description">
+                {activeSprint?.goal || "No active sprint goal defined yet."}
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section className="card">
+          <div className="card-header">
+            <h3>Sprint outcomes</h3>
+          </div>
+          <div className="card-body" style={{ display: "grid", gap: 12 }}>
+            {sprintSummaries.length === 0 ? (
+              <div className="service-empty">No sprint history yet.</div>
+            ) : (
+              sprintSummaries.slice(0, 5).map((sprint) => (
+                <GoalMetric
+                  key={sprint.id}
+                  label={sprint.name}
+                  value={`${sprint.completedTasks}/${sprint.totalTasks} complete`}
+                  percent={sprint.completionRate}
+                />
+              ))
+            )}
+          </div>
+        </section>
       </div>
-    </AppLayout>
+    </ProjectWorkspaceShell>
+  );
+}
+
+function GoalMetric({ label, value, percent, color = "var(--primary-500)" }) {
+  return (
+    <div>
+      <div style={{ display: "flex", justifyContent: "space-between", gap: 16, marginBottom: 8 }}>
+        <strong>{label}</strong>
+        <span style={{ color: "var(--text-secondary)" }}>{value}</span>
+      </div>
+      <div
+        style={{
+          height: 12,
+          background: "var(--bg-tertiary)",
+          borderRadius: 999,
+          overflow: "hidden",
+        }}
+      >
+        <div style={{ width: `${percent}%`, height: "100%", background: color }} />
+      </div>
+    </div>
   );
 }

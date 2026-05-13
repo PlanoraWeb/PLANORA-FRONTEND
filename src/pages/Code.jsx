@@ -1,61 +1,59 @@
-import React from "react";
-import AppLayout from "../layouts/AppLayout";  
-import "../styles/App.css";
-import "../styles/Component.css";
-import "../styles/DesignSystem.css";
-import "../styles/Board.css";
-import ProjectTabs from "../components/ProjectTabs";
-import { useState } from "react";
+import ProjectWorkspaceShell from "../components/ProjectWorkspaceShell";
+import { useProjectWorkspace } from "../hooks/useProjectWorkspace";
 
-const Code = () => {
-    const [activeTab, setActiveTab] = useState("code");
-        
-          const handleTab = (tab) => {
-            if (tab === "overview") return (window.location.href = "/project-detail");
-            if (tab === "board") return (window.location.href = "/board");
-            if (tab === "backlog") return (window.location.href = "/backlog");
-            if (tab === "sprints") return (window.location.href = "/sprint");
-            if (tab === "timeline") return (window.location.href = "/timeline");
-            if (tab === "calendar") return (window.location.href = "/calendar");
-            if (tab === "forms") return (window.location.href = "/forms");
-            if (tab === "goals") return (window.location.href = "/goals");
-            if (tab === "development") return (window.location.href = "/development");
-            if (tab === "archive") return (window.location.href = "/archive");
-            if (tab === "pages") return (window.location.href = "/pages");
-            if (tab === "scope") return (window.location.href = "/scope");
-            if (tab === "code") return (window.location.href = "/code");
-            setActiveTab(tab);
-          };
+export default function Code() {
+  const workspace = useProjectWorkspace("code");
+  const insights = workspace.insights;
+  const done = insights?.summary?.completedTasks || 0;
+  const open = insights?.summary?.openTasks || 0;
+  const overdue = insights?.summary?.overdueTasks || 0;
+
   return (
-    <AppLayout>
-      <ProjectTabs activeTab={activeTab} onTabChange={handleTab} />
-          {/* Empty State */}
-          <div className="card" style={{ minHeight: "400px" }}>
-            <div className="card-body">
-              <div className="empty-state">
-                <div className="empty-state-icon">
-                  <svg
-                    width="48"
-                    height="48"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="1.5"
-                  >
-                    <polyline points="16 18 22 12 16 6" />
-                    <polyline points="8 6 2 12 8 18" />
-                  </svg>
-                </div>
+    <ProjectWorkspaceShell {...workspace}>
+      <div
+        style={{
+          display: "grid",
+          gridTemplateColumns: "repeat(3, minmax(0, 1fr))",
+          gap: "var(--space-4)",
+          marginBottom: "var(--space-6)",
+        }}
+      >
+        <ReleaseCard label="Shipped work" value={done} />
+        <ReleaseCard label="Open work" value={open} />
+        <ReleaseCard label="Release blockers" value={overdue} />
+      </div>
 
-                <h3 className="empty-state-title">Kod</h3>
-                <p className="empty-state-description">
-                  Repository bağlayarak branch ve commit'leri görüntüleyin.
-                </p>
+      <div className="card">
+        <div className="card-header">
+          <h3>Recent completed changes</h3>
+        </div>
+        <div className="card-body" style={{ display: "grid", gap: 12 }}>
+          {(insights?.archivedTasks || []).slice(0, 8).map((task) => (
+            <div
+              key={task.id}
+              style={{
+                padding: "var(--space-4)",
+                border: "1px solid var(--border-default)",
+                borderRadius: "var(--radius-xl)",
+              }}
+            >
+              <div style={{ fontWeight: 600 }}>{task.title}</div>
+              <div style={{ fontSize: 12, color: "var(--text-secondary)" }}>
+                {task.type} · {task.priority} · {new Date(task.updatedAt).toLocaleDateString()}
               </div>
             </div>
-          </div>
-    </AppLayout>
+          ))}
+        </div>
+      </div>
+    </ProjectWorkspaceShell>
   );
-};
+}
 
-export default Code;
+function ReleaseCard({ label, value }) {
+  return (
+    <div className="dashboard-card">
+      <div className="dashboard-card-value">{value}</div>
+      <div className="dashboard-card-label">{label}</div>
+    </div>
+  );
+}

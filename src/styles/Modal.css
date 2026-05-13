@@ -1,64 +1,13 @@
 .link-btn {
   background: none;
   border: none;
-  color: #007bff;
-  text-decoration: underline;
+  color: var(--primary-300);
+  text-decoration: none;
   cursor: pointer;
   padding: 0;
   font: inherit;
 }
 
-
-.modal-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background-color: rgba(0, 0, 0, 0.3); /* Yarı şeffaf siyah */
-  display: flex;
-  justify-content: flex-end; /* İçeriği sağa yaslar */
-  align-items: stretch; /* Yukarıdan aşağı tam boy yapar */
-  z-index: 1000;
-  backdrop-filter: blur(8px); /* ARKA PLANI BULANIKLAŞTIRAN KRİTİK SATIR */
-}
-
-.modal {
-  background: white;
-  width: 450px; /* Panel genişliği */
-  max-width: 90%;
-  height: 100%;
-  box-shadow: -5px 0 15px rgba(0, 0, 0, 0.1);
-  position: relative;
-  display: flex;
-  flex-direction: column;
-  animation: slideInRight 0.3s ease-out; /* Sağdan gelme efekti */
-}
-
-.modal-close-btn {
-  position: absolute;
-  top: 20px;
-  right: 20px;
-  background: none;
-  border: none;
-  font-size: 28px;
-  cursor: pointer;
-  color: #666;
-  z-index: 10;
-}
-
-.modal-content {
-  padding: 40px 30px;
-  overflow-y: auto; /* İçerik uzarsa kaydırılabilir olsun */
-  height: 100%;
-}
-
-/* Sağdan kayarak gelme animasyonu */
-@keyframes slideInRight {
-  from {
-    transform: translateX(100%);
-  }
-  to {
-    transform: translateX(0);
-  }
+.link-btn:hover {
+  color: #ffffff;
 }

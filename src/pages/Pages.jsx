@@ -1,58 +1,47 @@
-import { useState } from "react";
-import AppLayout from "../layouts/AppLayout";
-import "../styles/App.css";
-import "../styles/Component.css";
-import "../styles/DesignSystem.css";
-import "../styles/Board.css";
-import ProjectTabs from "../components/ProjectTabs";
+import ProjectWorkspaceShell from "../components/ProjectWorkspaceShell";
+import { useProjectWorkspace } from "../hooks/useProjectWorkspace";
 
 export default function Pages() {
-    const [activeTab, setActiveTab] = useState("pages");
-          const handleTab = (tab) => {
-            if (tab === "overview") return (window.location.href = "/project-detail");
-            if (tab === "board") return (window.location.href = "/board");
-            if (tab === "backlog") return (window.location.href = "/backlog");
-            if (tab === "sprints") return (window.location.href = "/sprint");
-            if (tab === "timeline") return (window.location.href = "/timeline");
-            if (tab === "calendar") return (window.location.href = "/calendar");
-            if (tab === "forms") return (window.location.href = "/forms");
-            if (tab === "goals") return (window.location.href = "/goals");
-            if (tab === "development") return (window.location.href = "/development");
-            if (tab === "archive") return (window.location.href = "/archive");
-            if (tab === "pages") return (window.location.href = "/pages");
-            if (tab === "scope") return (window.location.href = "/scope");
-            if (tab === "code") return (window.location.href = "/code");
-            setActiveTab(tab);
-          };
+  const workspace = useProjectWorkspace("pages");
+  const insights = workspace.insights;
+
+  const knowledgeCards = [
+    {
+      title: "Project brief",
+      body: insights?.project?.description || "Add a project description to document the brief.",
+    },
+    {
+      title: "Current sprint goal",
+      body:
+        insights?.summary?.activeSprint?.goal ||
+        "No active sprint goal has been defined yet.",
+    },
+    {
+      title: "Team roster",
+      body: `${insights?.summary?.memberCount || 0} team members are currently in this workspace.`,
+    },
+  ];
+
   return (
-    <AppLayout>
-        <ProjectTabs activeTab={activeTab} onTabChange={handleTab} />
-          {/* EMPTY STATE */}
-          <div className="card" style={{ minHeight: "400px" }}>
+    <ProjectWorkspaceShell {...workspace}>
+      <div
+        style={{
+          display: "grid",
+          gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))",
+          gap: "var(--space-4)",
+        }}
+      >
+        {knowledgeCards.map((card) => (
+          <div className="card" key={card.title}>
+            <div className="card-header">
+              <h3>{card.title}</h3>
+            </div>
             <div className="card-body">
-
-              <div className="empty-state">
-
-                <div className="empty-state-icon">
-                  <svg width="48" height="48" viewBox="0 0 24 24"
-                    fill="none" stroke="currentColor" strokeWidth="1.5">
-                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
-                    <polyline points="14 2 14 8 20 8" />
-                    <line x1="16" y1="13" x2="8" y2="13" />
-                    <line x1="16" y1="17" x2="8" y2="17" />
-                  </svg>
-                </div>
-
-                <h3 className="empty-state-title">Sayfalar</h3>
-
-                <p className="empty-state-description">
-                  Proje dokümantasyonu ve wiki sayfaları oluşturun.
-                </p>
-
-              </div>
-
+              <div className="task-description">{card.body}</div>
             </div>
           </div>
-    </AppLayout>
+        ))}
+      </div>
+    </ProjectWorkspaceShell>
   );
 }

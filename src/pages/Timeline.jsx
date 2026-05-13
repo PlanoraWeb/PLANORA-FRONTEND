@@ -1,58 +1,53 @@
-import AppLayout from "../layouts/AppLayout";
-import "../styles/App.css";
-import "../styles/Component.css";
-import "../styles/DesignSystem.css";
-import "../styles/Board.css";
-import Board from "../components/ProjectTabs";
-import { CiViewTimeline } from "react-icons/ci";
-import { useState } from "react";
-
+import ProjectWorkspaceShell from "../components/ProjectWorkspaceShell";
+import { useProjectWorkspace } from "../hooks/useProjectWorkspace";
 
 export default function TimelinePage() {
-    const [activeTab, setActiveTab] = useState("timeline");
-    
-      const handleTab = (tab) => {
-        if (tab === "overview") return (window.location.href = "/project-detail");
-        if (tab === "board") return (window.location.href = "/board");
-        if (tab === "backlog") return (window.location.href = "/backlog");
-        if (tab === "sprints") return (window.location.href = "/sprint");
-        if (tab === "timeline") return (window.location.href = "/timeline");
-        if (tab === "calendar") return (window.location.href = "/calendar");
-        if (tab === "forms") return (window.location.href = "/forms");
-        if (tab === "goals") return (window.location.href = "/goals");
-        if (tab === "development") return (window.location.href = "/development");
-        if (tab === "archive") return (window.location.href = "/archive");
-        if (tab === "pages") return (window.location.href = "/pages");
-        if (tab === "scope") return (window.location.href = "/scope");
-        if (tab === "code") return (window.location.href = "/code");
-        setActiveTab(tab);
-      };
+  const workspace = useProjectWorkspace("timeline");
+  const timeline = workspace.insights?.dueTimeline || [];
+
   return (
-    <AppLayout>
-        {/* CONTENT */}
-        <div className="app-content">
-
-          <Board activeTab={activeTab} onTabChange={handleTab} />
-
-          {/* EMPTY STATE */}
-          <div className="card" style={{ minHeight: "400px" }}>
-            <div className="card-body">
-              <div className="empty-state">
-                <div className="empty-state-icon">
-                  <CiViewTimeline style={{ fontSize: "48px" }}/>
-                </div>
-
-                <h3 className="empty-state-title">
-                  Zaman Çizelgesi
-                </h3>
-
-                <p className="empty-state-description">
-                  Görevleri tarih bazlı Gantt görünümünde görüntüleyin.
-                </p>
-              </div>
-            </div>
-          </div>
+    <ProjectWorkspaceShell {...workspace}>
+      <div className="card">
+        <div className="card-header">
+          <h3>Delivery timeline</h3>
         </div>
-    </AppLayout>
+        <div className="card-body" style={{ display: "grid", gap: "var(--space-4)" }}>
+          {timeline.length === 0 ? (
+            <div className="service-empty">No dated tasks available yet.</div>
+          ) : (
+            timeline.map((item) => (
+              <div
+                key={item.id}
+                style={{
+                  display: "grid",
+                  gridTemplateColumns: "140px 1fr auto",
+                  gap: 16,
+                  alignItems: "center",
+                  padding: "var(--space-4)",
+                  border: "1px solid var(--border-default)",
+                  borderRadius: "var(--radius-xl)",
+                  background: "var(--bg-primary)",
+                }}
+              >
+                <div style={{ color: "var(--text-secondary)", fontWeight: 600 }}>
+                  {item.dueDate ? new Date(item.dueDate).toLocaleDateString() : "No date"}
+                </div>
+                <div>
+                  <div style={{ fontWeight: 600 }}>{item.title}</div>
+                  <div style={{ fontSize: 12, color: "var(--text-secondary)" }}>
+                    {item.status} · {item.priority}
+                  </div>
+                </div>
+                <div style={{ fontSize: 12, color: "var(--text-secondary)" }}>
+                  {item.assignee
+                    ? `${item.assignee.firstName} ${item.assignee.lastName}`
+                    : "Unassigned"}
+                </div>
+              </div>
+            ))
+          )}
+        </div>
+      </div>
+    </ProjectWorkspaceShell>
   );
 }

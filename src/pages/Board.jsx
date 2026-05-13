@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from "react";
 import AppLayout from "../layouts/AppLayout";
 import "../styles/Board.css";
 import "../styles/Component.css";
+import { useSearchParams } from "react-router-dom";
 import { DragDropContext, Droppable, Draggable } from "@hello-pangea/dnd";
 import {
   FiPlus,
@@ -20,6 +21,14 @@ import {
   changeTaskStatus,
   getStatusesByProject,
 } from "../services/taskService";
+import {
+  applyTaskDrag,
+  getRememberedProjectId,
+  getTaskStatusId,
+  rememberProjectId,
+  resolveProjectSelection,
+  sortTasksByDisplayOrder,
+} from "../utils/workflowUi";
 
 const STATUS_DISPLAY_MAP = {
   TODO: "To Do",
@@ -29,14 +38,14 @@ const STATUS_DISPLAY_MAP = {
 
 /* ── Avatar Colors ────────────────────────────────────────────── */
 const AVATAR_COLORS = [
-  "linear-gradient(135deg, #6c5ce7, #a29bfe)",
-  "linear-gradient(135deg, #00b894, #00cec9)",
-  "linear-gradient(135deg, #fd79a8, #e84393)",
-  "linear-gradient(135deg, #fdcb6e, #e17055)",
-  "linear-gradient(135deg, #0984e3, #74b9ff)",
+  "linear-gradient(135deg, #5e6ad2, #7b9cff)",
+  "linear-gradient(135deg, #4d8cff, #79acff)",
+  "linear-gradient(135deg, #37c77f, #5dd49a)",
+  "linear-gradient(135deg, #f5b83d, #d9a22b)",
+  "linear-gradient(135deg, #ff6b6b, #e68484)",
 ];
 
-const COL_COLORS = ["#6366f1", "#f59e0b", "#10b981", "#ef4444", "#8b5cf6"];
+const COL_COLORS = ["#5e6ad2", "#4d8cff", "#f5b83d", "#37c77f", "#ff6b6b"];
 
 /* ── Helpers ──────────────────────────────────────────────────── */
 function getInitials(first = "", last = "") {
@@ -54,10 +63,16 @@ function formatDueDate(d) {
   };
 }
 
+function formatIssueKeyLocal(value = "") {
+  return value ? value.slice(0, 8).toUpperCase() : "TASK";
+}
+
 /* ================================================================
    BOARD PAGE
    ================================================================ */
 function Board() {
+  const [searchParams] = useSearchParams();
+  const requestedProjectId = searchParams.get("projectId") || "";
   const [projects, setProjects] = useState([]);
   const [selectedProjectId, setSelectedProjectId] = useState("");
   const [statuses, setStatuses] = useState([]);
@@ -75,9 +90,15 @@ function Board() {
       try {
         const res = await getProjects();
         const list = res.data?.data ?? [];
+        const rememberedProjectId = getRememberedProjectId();
         setProjects(list);
         if (list.length > 0) {
-          setSelectedProjectId(list[0].id);
+          const initialProjectId = resolveProjectSelection(
+            list,
+            requestedProjectId || rememberedProjectId
+          );
+          setSelectedProjectId(initialProjectId);
+          rememberProjectId(initialProjectId);
         }
       } catch (err) {
         console.error("Failed to load projects", err);
@@ -85,17 +106,34 @@ function Board() {
         setLoading(false);
       }
     })();
-  }, []);
+  }, [requestedProjectId]);
+
+  useEffect(() => {
+    if (selectedProjectId) {
+      rememberProjectId(selectedProjectId);
+    }
+  }, [selectedProjectId]);
 
   const loadBoard = useCallback(async () => {
+    if (!selectedProjectId) {
+      setStatuses([]);
+      setTasks([]);
+      setLoading(false);
+      return;
+    }
+
     setLoading(true);
     try {
       const [statusRes, taskRes] = await Promise.all([
         getStatusesByProject(selectedProjectId),
-        getTasksByProject(selectedProjectId),
+        getTasksByProject(selectedProjectId, {
+          limit: 100,
+          sortBy: "order",
+          sortOrder: "asc",
+        }),
       ]);
       setStatuses(statusRes.data?.data ?? []);
-      setTasks(taskRes.data?.data ?? []);
+      setTasks(sortTasksByDisplayOrder(taskRes.data?.data ?? []));
     } catch (err) {
       console.error("Failed to load board", err);
     } finally {
@@ -119,23 +157,22 @@ function Board() {
     )
       return;
 
-    // Optimistic UI update
-    const draggedTask = tasks.find((t) => t.id === draggableId);
-    if (!draggedTask) return;
-
-    const newTasks = tasks.map((t) =>
-      t.id === draggableId
-        ? { ...t, statusId: destination.droppableId, status: statuses.find((s) => s.id === destination.droppableId) || t.status }
-        : t
+    const previousTasks = tasks;
+    const nextTasks = applyTaskDrag(
+      tasks,
+      draggableId,
+      source,
+      destination,
+      statuses
     );
-    setTasks(newTasks);
+    setTasks(nextTasks);
 
-    // API call
     try {
       await changeTaskStatus(draggableId, destination.droppableId, destination.index);
+      await loadBoard();
     } catch (err) {
       console.error("Failed to change status", err);
-      loadBoard(); // rollback
+      setTasks(previousTasks);
     }
   }
 
@@ -144,7 +181,7 @@ function Board() {
     try {
       await createTask(selectedProjectId, data);
       setCreateModalStatus(null);
-      loadBoard();
+      await loadBoard();
     } catch (err) {
       console.error("Failed to create task", err);
     }
@@ -155,7 +192,7 @@ function Board() {
     try {
       await updateTask(id, data);
       setEditingTask(null);
-      loadBoard();
+      await loadBoard();
     } catch (err) {
       console.error("Failed to update task", err);
     }
@@ -166,7 +203,7 @@ function Board() {
     try {
       await deleteTask(id);
       setDeletingTask(null);
-      loadBoard();
+      await loadBoard();
     } catch (err) {
       console.error("Failed to delete task", err);
     }
@@ -174,7 +211,9 @@ function Board() {
 
   /* ── Group tasks by status ──────────────────────────────────── */
   function getTasksForStatus(statusId) {
-    return tasks.filter((t) => t.statusId === statusId);
+    return sortTasksByDisplayOrder(
+      tasks.filter((task) => getTaskStatusId(task) === statusId)
+    );
   }
 
   const selectedProject = projects.find((p) => p.id === selectedProjectId);
@@ -339,10 +378,10 @@ function TaskCardContent({ task, onDelete }) {
   return (
     <>
       <div className="task-card-header">
-        <div className="task-card-badges">
-          <span className={`task-type-badge ${task.type}`}>{task.type}</span>
-          <span className={`task-priority-badge ${task.priority}`}>
-            {task.priority}
+        <div className="task-card-topline">
+          <span className="task-card-key">{formatIssueKeyLocal(task.id)}</span>
+          <span className="task-card-state">
+            {task.assignee ? "Working..." : "Queued"}
           </span>
         </div>
         <button
@@ -357,6 +396,10 @@ function TaskCardContent({ task, onDelete }) {
         </button>
       </div>
       <div className="task-card-title">{task.title}</div>
+      <div className="task-card-badges">
+        <span className={`task-type-badge ${task.type}`}>{task.type}</span>
+        <span className={`task-priority-badge ${task.priority}`}>{task.priority}</span>
+      </div>
       <div className="task-card-footer">
         {due ? (
           <span className={`task-card-due ${due.isOverdue ? "overdue" : ""}`}>
@@ -420,7 +463,7 @@ function CreateTaskModal({ statusId, members, onClose, onCreate }) {
       <div className="modal" onClick={(e) => e.stopPropagation()} style={{ maxWidth: 560 }}>
         <div className="modal-header">
           <span className="modal-title">Create New Task</span>
-          <button className="modal-close" onClick={onClose}>✕</button>
+          <button className="modal-close" onClick={onClose}>x</button>
         </div>
         <form onSubmit={handleSubmit}>
           <div className="modal-body">
@@ -551,7 +594,7 @@ function EditTaskModal({ task, statuses, members, onClose, onSave }) {
       <div className="modal" onClick={(e) => e.stopPropagation()} style={{ maxWidth: 560 }}>
         <div className="modal-header">
           <span className="modal-title">Edit Task</span>
-          <button className="modal-close" onClick={onClose}>✕</button>
+          <button className="modal-close" onClick={onClose}>x</button>
         </div>
         <form onSubmit={handleSubmit}>
           <div className="modal-body">

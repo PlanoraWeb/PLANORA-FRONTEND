@@ -1,70 +1,64 @@
-import AppLayout from "../layouts/AppLayout";
-import "../styles/Component.css";
-import "../styles/DesignSystem.css";
-import "../styles/Board.css";
-import "../styles/App.css";
-import Board from "../components/ProjectTabs";
-import { useState } from "react";
-
+import { useMemo } from "react";
+import ProjectWorkspaceShell from "../components/ProjectWorkspaceShell";
+import { useProjectWorkspace } from "../hooks/useProjectWorkspace";
 
 export default function CalendarPage() {
-    const [activeTab, setActiveTab] = useState("calendar");
-        
-          const handleTab = (tab) => {
-            if (tab === "overview") return (window.location.href = "/project-detail");
-            if (tab === "board") return (window.location.href = "/board");
-            if (tab === "backlog") return (window.location.href = "/backlog");
-            if (tab === "sprints") return (window.location.href = "/sprint");
-            if (tab === "timeline") return (window.location.href = "/timeline");
-            if (tab === "calendar") return (window.location.href = "/calendar");
-            if (tab === "forms") return (window.location.href = "/forms");
-            if (tab === "goals") return (window.location.href = "/goals");
-            if (tab === "development") return (window.location.href = "/development");
-            if (tab === "archive") return (window.location.href = "/archive");
-            if (tab === "pages") return (window.location.href = "/pages");
-            if (tab === "scope") return (window.location.href = "/scope");
-            if (tab === "code") return (window.location.href = "/code");
-            setActiveTab(tab);
-          };
+  const workspace = useProjectWorkspace("calendar");
+  const dueTimeline = workspace.insights?.dueTimeline || [];
+
+  const grouped = useMemo(() => {
+    const map = new Map();
+    dueTimeline.forEach((item) => {
+      const key = item.dueDate
+        ? new Date(item.dueDate).toLocaleDateString()
+        : "No due date";
+      if (!map.has(key)) map.set(key, []);
+      map.get(key).push(item);
+    });
+    return Array.from(map.entries());
+  }, [dueTimeline]);
+
   return (
-    <AppLayout>
-
-
-        <Board activeTab={activeTab} onTabChange={handleTab} />
-          {/* EMPTY STATE */}
-          <div className="card" style={{ minHeight: "400px" }}>
-            <div className="card-body">
-
-              <div className="empty-state">
-
-                <div className="empty-state-icon">
-                  <svg
-                    width="48"
-                    height="48"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="1.5"
-                  >
-                    <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
-                    <line x1="16" y1="2" x2="16" y2="6" />
-                    <line x1="8" y1="2" x2="8" y2="6" />
-                    <line x1="3" y1="10" x2="21" y2="10" />
-                  </svg>
-                </div>
-
-                <h3 className="empty-state-title">
-                  Takvim
-                </h3>
-
-                <p className="empty-state-description">
-                  Vade tarihleri ve sprintleri takvim görünümünde planlayın.
-                </p>
-
-              </div>
-
-            </div>
+    <ProjectWorkspaceShell {...workspace}>
+      <div
+        style={{
+          display: "grid",
+          gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))",
+          gap: "var(--space-4)",
+        }}
+      >
+        {grouped.length === 0 ? (
+          <div className="card">
+            <div className="card-body">No due dates planned yet.</div>
           </div>
-    </AppLayout>
+        ) : (
+          grouped.map(([date, items]) => (
+            <div className="card" key={date}>
+              <div className="card-header">
+                <h3>{date}</h3>
+              </div>
+              <div className="card-body" style={{ display: "grid", gap: 12 }}>
+                {items.map((item) => (
+                  <div
+                    key={item.id}
+                    style={{
+                      padding: "var(--space-3)",
+                      borderRadius: "var(--radius-lg)",
+                      background: "var(--bg-secondary)",
+                      border: "1px solid var(--border-subtle)",
+                    }}
+                  >
+                    <div style={{ fontWeight: 600 }}>{item.title}</div>
+                    <div style={{ fontSize: 12, color: "var(--text-secondary)" }}>
+                      {item.status} · {item.priority}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          ))
+        )}
+      </div>
+    </ProjectWorkspaceShell>
   );
 }

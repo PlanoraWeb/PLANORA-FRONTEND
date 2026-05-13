@@ -1,54 +1,64 @@
-import React from "react";
-import AppLayout from "../layouts/AppLayout";
-import "../styles/App.css";
-import "../styles/Component.css";
-import "../styles/DesignSystem.css";
-import "../styles/Board.css";
-import ProjectTabs from "../components/ProjectTabs";
-import { useState } from "react";
+import ProjectWorkspaceShell from "../components/ProjectWorkspaceShell";
+import { useProjectWorkspace } from "../hooks/useProjectWorkspace";
 
-const Scope = () => {
-     const [activeTab, setActiveTab] = useState("scope");
-    
-      const handleTab = (tab) => {
-        if (tab === "overview") return (window.location.href = "/project-detail");
-        if (tab === "board") return (window.location.href = "/board");
-        if (tab === "backlog") return (window.location.href = "/backlog");
-        if (tab === "sprints") return (window.location.href = "/sprint");
-        if (tab === "timeline") return (window.location.href = "/timeline");
-        if (tab === "calendar") return (window.location.href = "/calendar");
-        if (tab === "forms") return (window.location.href = "/forms");
-        if (tab === "goals") return (window.location.href = "/goals");
-        if (tab === "development") return (window.location.href = "/development");
-        if (tab === "archive") return (window.location.href = "/archive");
-        if (tab === "pages") return (window.location.href = "/pages");
-        if (tab === "scope") return (window.location.href = "/scope");
-        if (tab === "code") return (window.location.href = "/code");
-        setActiveTab(tab);
-      };
+export default function Scope() {
+  const workspace = useProjectWorkspace("scope");
+  const insights = workspace.insights;
+
   return (
-    <AppLayout>
-      <ProjectTabs activeTab={activeTab} onTabChange={handleTab} />
-          <div className="card" style={{ minHeight: "400px" }}>
-            <div className="card-body">
-              <div className="empty-state">
-                <div className="empty-state-icon">
-                  <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-                    <circle cx="12" cy="12" r="10" />
-                    <line x1="2" y1="12" x2="22" y2="12" />
-                    <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" />
-                  </svg>
-                </div>
+    <ProjectWorkspaceShell {...workspace}>
+      <div
+        style={{
+          display: "grid",
+          gridTemplateColumns: "1fr 1fr",
+          gap: "var(--space-6)",
+        }}
+      >
+        <ScopeCard title="Work by type" items={insights?.tasksByType || []} itemKey="type" />
+        <ScopeCard
+          title="Work by priority"
+          items={insights?.tasksByPriority || []}
+          itemKey="priority"
+        />
+      </div>
+    </ProjectWorkspaceShell>
+  );
+}
 
-                <h3 className="empty-state-title">Kapsam</h3>
-                <p className="empty-state-description">
-                  Proje kapsamı ve scope yönetimi.
-                </p>
-              </div>
+function ScopeCard({ title, items, itemKey }) {
+  const total = items.reduce((sum, item) => sum + item.count, 0);
+
+  return (
+    <div className="card">
+      <div className="card-header">
+        <h3>{title}</h3>
+      </div>
+      <div className="card-body" style={{ display: "grid", gap: "var(--space-4)" }}>
+        {items.map((item) => (
+          <div key={item[itemKey]}>
+            <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 8 }}>
+              <strong>{item[itemKey]}</strong>
+              <span style={{ color: "var(--text-secondary)" }}>{item.count}</span>
+            </div>
+            <div
+              style={{
+                height: 12,
+                borderRadius: 999,
+                overflow: "hidden",
+                background: "var(--bg-tertiary)",
+              }}
+            >
+              <div
+                style={{
+                  width: `${total ? Math.round((item.count / total) * 100) : 0}%`,
+                  height: "100%",
+                  background: "var(--primary-500)",
+                }}
+              />
             </div>
           </div>
-    </AppLayout>
+        ))}
+      </div>
+    </div>
   );
-};
-
-export default Scope;
+}

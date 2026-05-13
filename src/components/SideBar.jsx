@@ -1,27 +1,67 @@
-import "../styles/App.css"
+import "../styles/App.css";
+import "../styles/Component.css";
 import logo from "../assets/ikon.png";
-import "../styles/Component.css"
-import { FiInbox, FiCheckSquare, FiArchive, FiMoreVertical, FiAnchor, FiBox } from "react-icons/fi";
+import { Link, useLocation, useNavigate } from "react-router-dom";
+import { useMemo, useState } from "react";
+import { logoutRequest } from "../services/authService";
+import {
+  FiArchive,
+  FiCheckSquare,
+  FiFolder,
+  FiInbox,
+  FiLogOut,
+  FiSettings,
+  FiTarget,
+  FiUsers,
+} from "react-icons/fi";
 import { LuLayoutDashboard } from "react-icons/lu";
 import { MdAlignHorizontalLeft } from "react-icons/md";
 import { IoIosTime } from "react-icons/io";
-import { RiTeamLine } from "react-icons/ri";
-import { TbReportSearch } from "react-icons/tb";
-import { IoSettingsSharp } from "react-icons/io5";
-import { Link } from "react-router-dom";
-import { useState } from "react";
-import { logoutRequest } from "../services/authService";
-import { useNavigate } from "react-router-dom";
-import { MdOutlineLogout } from "react-icons/md";
-import { useLocation } from "react-router-dom";
 
-function Sidebar({user}) {
-  const displayName = user ? `${user.firstName} ${user.lastName}` : "Loading...";
-  // console.log("USER:", user);
-  const [open, setOpen] = useState(false);
+const SECTIONS = [
+  {
+    label: "Workspace",
+    items: [
+      { to: "/dashboard", label: "Overview", icon: LuLayoutDashboard },
+      { to: "/inbox", label: "Inbox", icon: FiInbox },
+      { to: "/tasks", label: "My Tasks", icon: FiCheckSquare },
+    ],
+  },
+  {
+    label: "Delivery",
+    items: [
+      { to: "/projects", label: "All Projects", icon: FiFolder },
+      { to: "/board", label: "Board", icon: LuLayoutDashboard },
+      { to: "/backlog", label: "Backlog", icon: MdAlignHorizontalLeft },
+      { to: "/sprint", label: "Sprints", icon: IoIosTime },
+    ],
+  },
+  {
+    label: "Organization",
+    items: [
+      { to: "/team", label: "Team", icon: FiUsers },
+      { to: "/reports", label: "Reports", icon: FiTarget },
+      { to: "/settings", label: "Settings", icon: FiSettings },
+    ],
+  },
+];
+
+function Sidebar({ user, collapsed = false, mobileOpen = false, onCloseMobile }) {
+  const [userMenuOpen, setUserMenuOpen] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
-  const isActive = (path) => location.pathname === path;
+
+  const displayName = user ? `${user.firstName} ${user.lastName}` : "Workspace";
+  const initials = useMemo(() => {
+    if (!user) return "PL";
+    return `${user.firstName?.[0] || ""}${user.lastName?.[0] || ""}`.toUpperCase();
+  }, [user]);
+
+  const isActive = (path) => {
+    if (path === "/dashboard") return location.pathname === path;
+    return location.pathname === path || location.pathname.startsWith(`${path}/`);
+  };
+
   const handleLogout = async () => {
     try {
       await logoutRequest();
@@ -35,96 +75,77 @@ function Sidebar({user}) {
     }
   };
 
+  const handleNavigate = () => {
+    setUserMenuOpen(false);
+    if (window.innerWidth <= 960) {
+      onCloseMobile?.();
+    }
+  };
+
   return (
-    <aside className="app-sidebar">
-      <Link to="/dashboard" className="sidebar-logo">
-        <img src={logo} alt="Planora" className="sidebar-logo-img" />
-        <span>Planora</span>
-      </Link>
+    <aside
+      className={`app-sidebar ${collapsed ? "collapsed" : ""} ${mobileOpen ? "mobile-open" : ""}`}
+    >
+      <div className="sidebar-top">
+        <Link to="/dashboard" className="sidebar-logo" onClick={handleNavigate}>
+          <img src={logo} alt="Planora" className="sidebar-logo-img" />
+          <div className="sidebar-brand-copy">
+            <span className="sidebar-brand-name">Planora</span>
+            <span className="sidebar-brand-subtitle">Delivery Workspace</span>
+          </div>
+        </Link>
+
+        <div className="sidebar-workspace-card">
+          <div className="sidebar-workspace-copy">
+            <span className="sidebar-workspace-label">Current space</span>
+            <strong>{user?.role?.name || "Product team"}</strong>
+          </div>
+          <div className="sidebar-workspace-pill">Live</div>
+        </div>
+      </div>
 
       <nav className="sidebar-nav">
-
-        {/* Workspace */}
-        <div className="sidebar-section">
-          <span className="sidebar-label">Workspace</span>
-
-          <Link to="/dashboard" className={`sidebar-link ${isActive("/dashboard") ? "active" : ""}`}>
-            <FiBox size={16} />
-            <span>Overview</span>
-          </Link>
-
-          <Link to="/inbox" className={`sidebar-link ${isActive("/inbox") ? "active" : ""}`}>
-            <FiInbox size={16} />
-            <span>Inbox</span>
-          </Link>
-
-          <Link to="/tasks" className={`sidebar-link ${isActive("/tasks") ? "active" : ""}`}>
-            <FiCheckSquare size={16} />
-            <span>My Tasks</span>
-          </Link>
-        </div>
-
-        {/* Projects */}
-        <div className="sidebar-section">
-          <span className="sidebar-label">Projects</span>
-
-          <Link to="/projects" className={`sidebar-link ${isActive("/projects") ? "active" : ""}`}>
-            <FiArchive size={16} />
-            <span>All Projects</span>
-          </Link>
-
-  
-
-          <Link to="/board" className={`sidebar-link ${isActive("/board") ? "active" : ""}`}>
-            <LuLayoutDashboard />
-            <span>Board</span>
-          </Link>
-
-          <Link to="/backlog" className={`sidebar-link ${isActive("/backlog") ? "active" : ""}`}>
-            <MdAlignHorizontalLeft size={16} />
-            <span>Backlog</span>
-          </Link>
-
-          <Link to="/sprint" className={`sidebar-link ${isActive("/sprint") ? "active" : ""}`}>
-            <IoIosTime size={16} />
-            <span>Sprints</span>
-          </Link>
-
-        </div>
-
-        {/* Organization */}
-        <div className="sidebar-section">
-          <span className="sidebar-label">Organization</span>
-
-          <Link to="/team" className={`sidebar-link ${isActive("/team") ? "active" : ""}`}>
-            <RiTeamLine size={16} />
-            <span>Team</span>
-          </Link>
-
-          <Link to="/reports" className={`sidebar-link ${isActive("/reports") ? "active" : ""}`}>
-            <TbReportSearch size={16} />
-            <span>Reports</span>
-          </Link>
-
-          <Link to="/settings" className={`sidebar-link ${isActive("/settings") ? "active" : ""}`}>
-            <IoSettingsSharp size={16} />
-            <span>Settings</span>
-          </Link>
-        </div>
-
+        {SECTIONS.map((section) => (
+          <div className="sidebar-section" key={section.label}>
+            <span className="sidebar-label">{section.label}</span>
+            {section.items.map((item) => {
+              const Icon = item.icon;
+              return (
+                <Link
+                  key={item.to}
+                  to={item.to}
+                  className={`sidebar-link ${isActive(item.to) ? "active" : ""}`}
+                  onClick={handleNavigate}
+                >
+                  <span className="sidebar-link-icon">
+                    <Icon size={18} />
+                  </span>
+                  <span>{item.label}</span>
+                </Link>
+              );
+            })}
+          </div>
+        ))}
       </nav>
-      {/*BURAYA KULLNICI BİLGİLERİ GELECEK*/}
-      <div className="sidebar-user" onClick={() => setOpen(!open)}>
-        <div className="sidebar-user-info">
-          <div className="sidebar-user-name">{displayName}</div>
-          <div className="sidebar-user-email">{user?.email}</div>
-        </div>
 
-        {open && (
+      <div className="sidebar-user-shell">
+        <button
+          className="sidebar-user"
+          type="button"
+          onClick={() => setUserMenuOpen((current) => !current)}
+        >
+          <div className="sidebar-user-avatar">{initials}</div>
+          <div className="sidebar-user-info">
+            <div className="sidebar-user-name">{displayName}</div>
+            <div className="sidebar-user-email">{user?.email}</div>
+          </div>
+        </button>
+
+        {userMenuOpen && (
           <div className="user-dropdown">
-            <button className="logout-btn" onClick={handleLogout} >
+            <button className="logout-btn" onClick={handleLogout}>
               <span>Logout</span>
-              <MdOutlineLogout size={16} />
+              <FiLogOut size={16} />
             </button>
           </div>
         )}

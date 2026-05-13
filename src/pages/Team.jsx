@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { FiTrash2, FiUserPlus, FiUsers } from "react-icons/fi";
+import { useSearchParams } from "react-router-dom";
 import AppLayout from "../layouts/AppLayout";
 import {
   addProjectMember,
@@ -18,6 +19,7 @@ function getErrorMessage(error, fallback) {
 }
 
 function Team() {
+  const [searchParams] = useSearchParams();
   const [projects, setProjects] = useState([]);
   const [users, setUsers] = useState([]);
   const [selectedProjectId, setSelectedProjectId] = useState("");
@@ -44,7 +46,14 @@ function Team() {
       const projectList = projectRes.data?.data ?? [];
       setProjects(projectList);
       setUsers(userRes.data?.data ?? []);
-      setSelectedProjectId((current) => current || projectList[0]?.id || "");
+      const requestedProjectId = searchParams.get("projectId");
+      setSelectedProjectId((current) => {
+        if (current && projectList.some((project) => project.id === current)) return current;
+        if (requestedProjectId && projectList.some((project) => project.id === requestedProjectId)) {
+          return requestedProjectId;
+        }
+        return projectList[0]?.id || "";
+      });
     } catch (error) {
       setMessage({
         type: "error",
@@ -121,6 +130,12 @@ function Team() {
     members.map((member) => member.user?.id || member.userId)
   );
   const availableUsers = users.filter((user) => !memberUserIds.has(user.id));
+  const summary = {
+    projects: projects.length,
+    members: members.length,
+    availableUsers: availableUsers.length,
+    directory: users.length,
+  };
 
   return (
     <AppLayout>
@@ -134,6 +149,13 @@ function Team() {
       {message && (
         <div className={`service-alert ${message.type}`}>{message.text}</div>
       )}
+
+      <div className="reports-summary-grid" style={{ marginBottom: "var(--space-5)" }}>
+        <SummaryCard label="Projects" value={summary.projects} />
+        <SummaryCard label="Project members" value={summary.members} />
+        <SummaryCard label="Available to add" value={summary.availableUsers} />
+        <SummaryCard label="User directory" value={summary.directory} />
+      </div>
 
       <div className="service-grid">
         <section className="service-panel">
@@ -273,6 +295,15 @@ function Team() {
 
 function getInitials(firstName = "", lastName = "") {
   return `${firstName.charAt(0)}${lastName.charAt(0)}`.toUpperCase() || "?";
+}
+
+function SummaryCard({ label, value }) {
+  return (
+    <div className="dashboard-card">
+      <div className="dashboard-card-value">{value}</div>
+      <div className="dashboard-card-label">{label}</div>
+    </div>
+  );
 }
 
 export default Team;

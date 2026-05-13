@@ -1,45 +1,60 @@
-import React from "react";
-import Button from "../components/Button";
-import Input from "../components/Input";
 import "../styles/App.css";
-import "../styles/DesignSystem.css"
-import { useNavigate } from "react-router-dom";
+import "../styles/DesignSystem.css";
+import { useNavigate, useLocation } from "react-router-dom";
+import { FiBell, FiHelpCircle, FiMenu, FiSearch, FiSidebar } from "react-icons/fi";
+import Button from "../components/Button";
 import { useOsShortcut } from "../hooks/useOsShortcut";
 
-  
+const PAGE_TITLES = {
+  "/dashboard": "Overview",
+  "/inbox": "Inbox",
+  "/tasks": "My Tasks",
+  "/projects": "Projects",
+  "/board": "Board",
+  "/backlog": "Backlog",
+  "/sprint": "Sprints",
+  "/team": "Team",
+  "/reports": "Reports",
+  "/settings": "Settings",
+};
 
-function Navbar() {
+function Navbar({ user, onToggleSidebar, sidebarCollapsed }) {
   const navigate = useNavigate();
+  const location = useLocation();
   const shortcut = useOsShortcut();
+  const title = PAGE_TITLES[location.pathname] || "Planora";
+
   return (
     <header className="app-navbar">
-      <div className="navbar-search">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-          <circle cx="11" cy="11" r="8" />
-          <line x1="21" y1="21" x2="16.65" y2="16.65" />
-        </svg>
+      <div className="navbar-left">
+        <button className="navbar-toggle" type="button" onClick={onToggleSidebar}>
+          {sidebarCollapsed ? <FiMenu size={18} /> : <FiSidebar size={18} />}
+        </button>
 
-        <input
-          type="text"
-          placeholder={`Search... (${shortcut})`}
-        />
+        <div className="navbar-heading">
+          <span className="navbar-section-kicker">Workspace</span>
+          <strong>{title}</strong>
+        </div>
+      </div>
+
+      <div className="navbar-search">
+        <FiSearch />
+        <input type="text" placeholder={`Search across work (${shortcut})`} />
       </div>
 
       <div className="navbar-actions">
+        <div className="navbar-mini-user">
+          <span className="navbar-mini-user-label">Signed in as</span>
+          <strong>{user?.firstName || "Planora"}</strong>
+        </div>
+
         <button className="navbar-btn" title="Notifications">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-            <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
-            <path d="M13.73 21a2 2 0 0 1-3.46 0" />
-          </svg>
+          <FiBell size={18} />
           <span className="dot"></span>
         </button>
 
         <button className="navbar-btn" title="Help">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-            <circle cx="12" cy="12" r="10" />
-            <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3" />
-            <line x1="12" y1="17" x2="12.01" y2="17" />
-          </svg>
+          <FiHelpCircle size={18} />
         </button>
 
         <Button onClick={() => navigate("/create-issue")} className="btn btn-primary btn-sm">
